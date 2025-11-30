@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tonks Towing Ticketing</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div>
+      <p class="eyebrow">Tonks Towing</p>
+      <h1>Ticketing & Rates</h1>
+    </div>
+    <nav class="nav">
+      <a href="index.html">Overview</a>
+      <a class="active" href="operations.html">Ticketing</a>
+      <a href="dispatch.html">Dispatch</a>
+    </nav>
+  </header>
+
+  <main class="layout page">
+    <section class="card">
+      <div class="card-header">
+        <h2>Configure ticket</h2>
+        <div class="provider-select">
+          <label for="provider">Provider</label>
+          <select id="provider"></select>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="resetRates" type="button">Reset rates to sheet defaults</button>
+        <button id="clearSelection" type="button">Clear all selections</button>
+      </div>
+
+      <div class="rate-table" id="rateTable"></div>
+
+      <details class="custom-add">
+        <summary>Add custom line item</summary>
+        <form id="customItemForm" class="custom-form">
+          <label>Label<input name="label" required placeholder="e.g. Traffic control" /></label>
+          <label>Amount<input name="amount" type="number" min="0" step="0.01" required value="0" /></label>
+          <label>Charge type
+            <select name="type">
+              <option value="flat">Flat fee</option>
+              <option value="per_km">Per km</option>
+              <option value="per_hour">Per hour</option>
+              <option value="per_unit">Per unit</option>
+            </select>
+          </label>
+          <button type="submit">Add line</button>
+        </form>
+      </details>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h2>Dispatch snapshot</h2>
+          <p class="muted">Live overview of fleet readiness, calls, and revenue.</p>
+        </div>
+        <div class="status-pill" id="secureStatus" title="Synaptics Systems security posture">Synaptics secure</div>
+      </div>
+
+      <div id="snapshot" class="snapshot-grid"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <h2>Summary</h2>
+        <div class="summary-actions">
+          <button id="recalculate" type="button">Recalculate now</button>
+          <label class="job-link">
+            Attach to job
+            <select id="jobSelect"></select>
+          </label>
+          <button id="attachToJob" type="button" class="secondary">Apply to job</button>
+        </div>
+      </div>
+      <div id="summary"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h2>Active jobs</h2>
+          <p class="muted">Track dispatch flow from intake to drop-off.</p>
+        </div>
+        <button id="logActivity" type="button" class="secondary">Refresh activity</button>
+      </div>
+      <div id="jobBoard"></div>
+
+      <details class="custom-add">
+        <summary>Add new job</summary>
+        <form id="jobForm" class="custom-form two-col">
+          <label>Job ID<input name="id" required placeholder="JOB-2081" /></label>
+          <label>Customer<input name="customer" required placeholder="ICBC / retail" /></label>
+          <label>Location<input name="location" required placeholder="Highway 1 / 232 exit" /></label>
+          <label>Provider
+            <select name="provider" required></select>
+          </label>
+          <label>ETA<input name="eta" required placeholder="14:25" /></label>
+          <label>Notes<input name="notes" placeholder="Winch out, debris, etc." /></label>
+          <button type="submit">Create job</button>
+        </form>
+      </details>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h2>Fleet roster</h2>
+          <p class="muted">Assets, operators, compliance, and readiness.</p>
+        </div>
+        <button id="rotateRoster" type="button" class="secondary">Rotate status</button>
+      </div>
+      <div id="fleet"></div>
+    </section>
+  </main>
+
+  <footer class="footer">Built for field use: supports offline entry, editable pricing, and transparent totals.</footer>
+
+  <script src="main.js"></script>
+</body>
+</html>
