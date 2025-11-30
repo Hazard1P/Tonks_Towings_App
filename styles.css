@@ -176,7 +176,7 @@ h1 { margin: 0; font-size: clamp(24px, 4vw, 34px); }
 }
 
 .task-board { display: grid; gap: 12px; }
-.task-card {
+.task-card { 
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 12px;

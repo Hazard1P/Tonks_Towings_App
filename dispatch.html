@@ -53,15 +53,32 @@
       <div id="workflowBoard"></div>
     </section>
 
-    <section class="card">
+    <section class="card dispatch-board">
       <div class="card-header">
         <div>
-          <h2>Dispatch task board</h2>
-          <p class="muted">Outstanding calls waiting for a driver assignment.</p>
+          <h2>Dispatch workflow</h2>
+          <p class="muted">Move calls forward, pair drivers, and route invoices to ticketing.</p>
         </div>
-        <div class="status-pill" title="Calls needing pairing">Driver pairing queue</div>
+        <div class="dispatch-actions">
+          <a class="button secondary" href="#dispatchTasks">Task board</a>
+          <a class="button secondary" href="operations.html">Open ticketing</a>
+        </div>
       </div>
-      <div id="dispatchTasks"></div>
+
+      <div class="dispatch-columns">
+        <div class="workflow-panel">
+          <div id="workflowBoard"></div>
+        </div>
+        <div class="task-panel" id="dispatchTasks">
+          <header class="panel-header">
+            <div>
+              <h3>Driver pairing queue</h3>
+              <p class="muted">Outstanding calls waiting for assignment and ETA confirmation.</p>
+            </div>
+            <div class="status-pill" title="Calls needing pairing">Needs driver</div>
+          </header>
+        </div>
+      </div>
     </section>
 
     <section class="card">
