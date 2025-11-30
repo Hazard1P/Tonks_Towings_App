@@ -96,6 +96,7 @@ const baseFleet = [
     id: 'TRK-21',
     type: 'Flatbed',
     operator: 'Sam Tonks',
+    contact: '604-000-2100',
     status: 'dispatched',
     location: 'Maple Ridge yard',
     compliance: ['CVSE', 'First aid', 'PPE'],
@@ -104,6 +105,7 @@ const baseFleet = [
     id: 'TRK-14',
     type: 'Wrecker',
     operator: 'Jas Dhaliwal',
+    contact: '604-000-1400',
     status: 'dispatched',
     location: 'HWY 1 @ 232',
     compliance: ['CVSE', 'Fall protection'],
@@ -112,6 +114,7 @@ const baseFleet = [
     id: 'TRK-7',
     type: 'Service',
     operator: 'Leah Campos',
+    contact: '604-000-0700',
     status: 'in_yard',
     location: 'Pitt Meadows shop',
     compliance: ['CVSE', 'Spill kit'],
@@ -120,6 +123,7 @@ const baseFleet = [
     id: 'TRK-3',
     type: 'Motorcycle deck',
     operator: 'Wei Zhang',
+    contact: '604-000-0300',
     status: 'on_scene',
     location: 'Lougheed Hwy',
     compliance: ['CVSE', 'First aid'],
@@ -185,6 +189,19 @@ function dispatchJob(jobId, driverId) {
   renderJobs();
   renderFleet();
   renderDispatchTasks();
+  renderWorkflowBoard();
+}
+
+function updateFleetStatus(truckId, status) {
+  const truck = state.fleet.find((t) => t.id === truckId);
+  if (!truck) return;
+  truck.status = status;
+  addActivity(`${truck.id} marked ${status.replace('_', ' ')}`);
+  persistState();
+  renderFleet();
+  renderSnapshot();
+  renderDispatchTasks();
+  renderWorkflowBoard();
 }
 
 function renderDispatchTasks() {
@@ -505,54 +522,118 @@ function renderJobSelect() {
 }
 
 function renderSnapshot() {
-  const container = document.querySelector('#snapshot');
-  container.innerHTML = '';
-  const active = state.jobs.length;
-  const delivered = state.jobs.filter((j) => j.status === 'Delivered').length;
-  const awaitingDispatch = state.jobs.filter((j) => j.status === 'Awaiting dispatch').length;
-  const readyFleet = state.fleet.filter((f) => f.status === 'available').length;
-  const dispatched = state.fleet.filter((f) => f.status === 'dispatched').length;
-  const revenue = state.jobs.reduce((acc, job) => acc + (job.revenue?.total || 0), 0);
+  const containers = document.querySelectorAll('#snapshot');
+  containers.forEach((container) => {
+    container.innerHTML = '';
+    const active = state.jobs.length;
+    const delivered = state.jobs.filter((j) => j.status === 'Delivered').length;
+    const awaitingDispatch = state.jobs.filter((j) => j.status === 'Awaiting dispatch').length;
+    const readyFleet = state.fleet.filter((f) => f.status === 'available').length;
+    const dispatched = state.fleet.filter((f) => f.status === 'dispatched').length;
+    const revenue = state.jobs.reduce((acc, job) => acc + (job.revenue?.total || 0), 0);
 
-  const cards = [
-    { label: 'Active jobs', value: active },
-    { label: 'Delivered today', value: delivered },
-    { label: 'Awaiting dispatch', value: awaitingDispatch },
-    { label: 'Fleet ready', value: readyFleet },
-    { label: 'Out on calls', value: dispatched },
-    { label: 'Projected revenue', value: formatCurrency(revenue) },
-  ];
+    const cards = [
+      { label: 'Active jobs', value: active },
+      { label: 'Delivered today', value: delivered },
+      { label: 'Awaiting dispatch', value: awaitingDispatch },
+      { label: 'Fleet ready', value: readyFleet },
+      { label: 'Out on calls', value: dispatched },
+      { label: 'Projected revenue', value: formatCurrency(revenue) },
+    ];
 
-  cards.forEach((card) => {
-    const item = createElement('div', { className: 'snapshot-item' });
-    item.append(
-      createElement('p', { className: 'muted', textContent: card.label }),
-      createElement('strong', { className: 'snapshot-value', textContent: card.value }),
-    );
-    container.appendChild(item);
+    cards.forEach((card) => {
+      const item = createElement('div', { className: 'snapshot-item' });
+      item.append(
+        createElement('p', { className: 'muted', textContent: card.label }),
+        createElement('strong', { className: 'snapshot-value', textContent: card.value }),
+      );
+      container.appendChild(item);
+    });
   });
 }
 
-function renderFleet() {
-  const container = document.querySelector('#fleet');
+function renderWorkflowBoard() {
+  const container = document.querySelector('#workflowBoard');
+  if (!container) return;
   container.innerHTML = '';
 
-  state.fleet.forEach((truck) => {
-    const row = createElement('div', { className: 'fleet-row' });
-    const statusMap = {
-      available: 'Available',
-      dispatched: 'Dispatched',
-      on_scene: 'On scene',
-      in_yard: 'In yard',
-    };
-    row.append(
-      createElement('div', { className: 'fleet-id', textContent: `${truck.id} · ${truck.type}` }),
-      createElement('div', { textContent: truck.operator }),
-      createElement('div', { className: 'muted', textContent: truck.location }),
-      createElement('div', { className: 'status', textContent: statusMap[truck.status] || truck.status }),
-      createElement('div', { className: 'muted', textContent: truck.compliance.join(', ') }),
+  const stageOrder = ['Awaiting dispatch', 'Dispatched', 'En route', 'On scene', 'Delivered'];
+  const stageDescriptions = {
+    'Awaiting dispatch': 'Pair calls with available drivers from the task board.',
+    'Dispatched': 'Confirm routing and ETA with the assigned truck.',
+    'En route': 'Monitor progress; send updates to ticketing if delays occur.',
+    'On scene': 'Confirm safety gear and compliance before hookup.',
+    'Delivered': 'Hand off paperwork and close the ticket.',
+  };
+
+  const steps = createElement('div', { className: 'workflow-steps' });
+  stageOrder.forEach((stage) => {
+    const count = state.jobs.filter((j) => j.status === stage).length;
+    const step = createElement('div', { className: 'workflow-step' });
+    step.append(
+      createElement('div', { className: 'workflow-count', textContent: count }),
+      createElement('strong', { textContent: stage }),
+      createElement('p', { className: 'muted', textContent: stageDescriptions[stage] }),
     );
-    container.appendChild(row);
+    steps.appendChild(step);
+  });
+
+  const links = createElement('div', { className: 'workflow-links' });
+  const taskLink = createElement('a', {
+    href: '#dispatchTasks',
+    className: 'button',
+    textContent: 'View task board',
+  });
+  const ticketLink = createElement('a', {
+    href: 'operations.html',
+    className: 'button secondary',
+    textContent: 'Attach rates in ticketing',
+  });
+  const overviewLink = createElement('a', {
+    href: 'index.html',
+    className: 'button secondary',
+    textContent: 'Back to overview',
+  });
+  links.append(taskLink, ticketLink, overviewLink);
+
+  container.append(steps, links);
+}
+
+function renderFleet() {
+  const containers = document.querySelectorAll('#fleet');
+  containers.forEach((container) => {
+    container.innerHTML = '';
+
+    state.fleet.forEach((truck) => {
+      const row = createElement('div', { className: 'fleet-row' });
+      const statusMap = {
+        available: 'Available',
+        dispatched: 'Dispatched',
+        on_scene: 'On scene',
+        in_yard: 'In yard',
+      };
+
+      const statusSelect = createElement('select', { value: truck.status });
+      Object.entries(statusMap).forEach(([value, label]) => {
+        const opt = createElement('option', { value, textContent: label });
+        if (value === truck.status) opt.selected = true;
+        statusSelect.appendChild(opt);
+      });
+      statusSelect.addEventListener('change', (ev) => updateFleetStatus(truck.id, ev.target.value));
+
+      const compliance = Array.isArray(truck.compliance) ? truck.compliance.join(', ') : truck.compliance || 'N/A';
+      const contact = truck.contact ? ` · ${truck.contact}` : '';
+
+      row.append(
+        createElement('div', { className: 'fleet-id', textContent: `${truck.id} · ${truck.type}` }),
+        createElement('div', { textContent: `${truck.operator}${contact}` }),
+        createElement('div', { className: 'muted', textContent: truck.location }),
+        statusSelect,
+        createElement('div', { className: 'muted', textContent: compliance }),
+        createElement('div', { className: 'fleet-actions', textContent: truck.status === 'available' ? 'Ready for call' : 'Active' }),
+      );
+      container.appendChild(row);
+    });
   });
 }
 
@@ -625,6 +706,7 @@ function advanceJob(jobId) {
   renderSnapshot();
   renderJobs();
   renderDispatchTasks();
+  renderWorkflowBoard();
 }
 
 function attachChargesToJob() {
@@ -641,6 +723,7 @@ function attachChargesToJob() {
 
 function wireJobForm() {
   const form = document.querySelector('#jobForm');
+  if (!form) return;
   const providerSelect = form.provider;
   Object.keys(state.rates).forEach((provider) => {
     const opt = createElement('option', { value: provider, textContent: provider });
@@ -668,6 +751,38 @@ function wireJobForm() {
     renderSnapshot();
     renderJobs();
     renderDispatchTasks();
+    renderWorkflowBoard();
+  });
+}
+
+function wireFleetForm() {
+  const form = document.querySelector('#addFleetForm');
+  if (!form) return;
+
+  form.addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    const data = Object.fromEntries(new FormData(form));
+    const compliance = (data.compliance || '')
+      .split(',')
+      .map((c) => c.trim())
+      .filter(Boolean);
+    const truck = {
+      id: data.id.trim(),
+      type: data.type.trim(),
+      operator: data.operator.trim(),
+      contact: (data.contact || '').trim(),
+      status: data.status || 'available',
+      location: data.location.trim(),
+      compliance: compliance.length ? compliance : ['CVSE'],
+    };
+    state.fleet.unshift(truck);
+    addActivity(`${truck.id} added with ${truck.operator}`);
+    persistState();
+    renderFleet();
+    renderDispatchTasks();
+    renderSnapshot();
+    renderWorkflowBoard();
+    form.reset();
   });
 }
 
@@ -767,6 +882,8 @@ function init() {
   renderJobs();
   renderDispatchTasks();
   wireJobForm();
+  renderWorkflowBoard();
+  wireFleetForm();
   wireControls();
 }
 

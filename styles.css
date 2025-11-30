@@ -189,14 +189,16 @@ h1 { margin: 0; font-size: clamp(24px, 4vw, 34px); }
 
 .fleet-row {
   display: grid;
-  grid-template-columns: repeat(5, minmax(80px, 1fr));
+  grid-template-columns: repeat(6, minmax(80px, 1fr));
   gap: 12px;
   padding: 10px 0;
   border-bottom: 1px solid var(--border);
+  align-items: center;
 }
 .fleet-row:last-child { border-bottom: none; }
 .fleet-id { font-weight: 700; }
 .status { color: var(--accent); font-weight: 700; }
+.fleet-actions { color: var(--muted); font-weight: 700; }
 
 .two-col { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
 
@@ -271,6 +273,35 @@ input[type="number"], input[type="text"], select {
   padding: 10px 12px;
   background: rgba(255, 255, 255, 0.02);
 }
+
+.workflow-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.workflow-step {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  display: grid;
+  gap: 6px;
+}
+
+.workflow-count {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: rgba(56, 189, 248, 0.12);
+  color: var(--accent);
+  font-weight: 800;
+}
+
+.workflow-links { display: flex; gap: 8px; flex-wrap: wrap; }
 
 @media (max-width: 720px) {
   .hero { grid-template-columns: 1fr; }
