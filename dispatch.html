@@ -34,6 +34,17 @@
     <section class="card">
       <div class="card-header">
         <div>
+          <h2>Dispatch workflow</h2>
+          <p class="muted">Move calls forward, attach rates, and jump to ticketing or overview.</p>
+        </div>
+        <a class="button secondary" href="operations.html">Open ticketing</a>
+      </div>
+      <div id="workflowBoard"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <div>
           <h2>Dispatch task board</h2>
           <p class="muted">Outstanding calls waiting for a driver assignment.</p>
         </div>
@@ -77,6 +88,26 @@
         <button id="rotateRoster" type="button" class="secondary">Rotate status</button>
       </div>
       <div id="fleet"></div>
+      <details class="custom-add">
+        <summary>Add truck and driver</summary>
+        <form id="addFleetForm" class="custom-form two-col">
+          <label>Truck ID<input name="id" required placeholder="TRK-45" /></label>
+          <label>Truck type<input name="type" required placeholder="Flatbed / Wrecker / Service" /></label>
+          <label>Driver name<input name="operator" required placeholder="Avery Stone" /></label>
+          <label>Driver contact<input name="contact" placeholder="604-555-1234" /></label>
+          <label>Current location<input name="location" required placeholder="Maple Ridge yard" /></label>
+          <label>Status
+            <select name="status">
+              <option value="available">Available</option>
+              <option value="in_yard">In yard</option>
+              <option value="dispatched">Dispatched</option>
+              <option value="on_scene">On scene</option>
+            </select>
+          </label>
+          <label>Compliance tags<input name="compliance" placeholder="CVSE, PPE, First aid" /></label>
+          <button type="submit">Add to roster</button>
+        </form>
+      </details>
     </section>
   </main>
 
