@@ -26,9 +26,20 @@
           <h2>Dispatch snapshot</h2>
           <p class="muted">Live overview of fleet readiness, calls, and revenue.</p>
         </div>
-        <div class="status-pill" id="secureStatus" title="Synaptics Systems security posture">Synaptics secure</div>
+        <div class="status-pill secure-status" title="Synaptics Systems security posture">Synaptics secure</div>
       </div>
-      <div id="snapshot" class="snapshot-grid"></div>
+      <div class="snapshot-grid"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <h2>Dispatch workflow</h2>
+          <p class="muted">Move calls forward, attach rates, and jump to ticketing or overview.</p>
+        </div>
+        <a class="button secondary" href="operations.html">Open ticketing</a>
+      </div>
+      <div id="workflowBoard"></div>
     </section>
 
     <section class="card">
@@ -48,13 +59,13 @@
           <h2>Active jobs</h2>
           <p class="muted">Track dispatch flow from intake to drop-off.</p>
         </div>
-        <button id="logActivity" type="button" class="secondary">Refresh activity</button>
+        <button class="log-activity" type="button" class="secondary">Refresh activity</button>
       </div>
-      <div id="jobBoard"></div>
+      <div class="job-board"></div>
 
       <details class="custom-add">
         <summary>Add new job</summary>
-        <form id="jobForm" class="custom-form two-col">
+        <form class="job-form custom-form two-col">
           <label>Job ID<input name="id" required placeholder="JOB-2081" /></label>
           <label>Customer<input name="customer" required placeholder="ICBC / retail" /></label>
           <label>Location<input name="location" required placeholder="Highway 1 / 232 exit" /></label>
@@ -74,9 +85,29 @@
           <h2>Fleet roster</h2>
           <p class="muted">Assets, operators, compliance, and readiness.</p>
         </div>
-        <button id="rotateRoster" type="button" class="secondary">Rotate status</button>
+        <button class="rotate-roster" type="button" class="secondary">Rotate status</button>
       </div>
-      <div id="fleet"></div>
+      <div class="fleet-roster"></div>
+      <details class="custom-add">
+        <summary>Add truck and driver</summary>
+        <form id="addFleetForm" class="custom-form two-col">
+          <label>Truck ID<input name="id" required placeholder="TRK-45" /></label>
+          <label>Truck type<input name="type" required placeholder="Flatbed / Wrecker / Service" /></label>
+          <label>Driver name<input name="operator" required placeholder="Avery Stone" /></label>
+          <label>Driver contact<input name="contact" placeholder="604-555-1234" /></label>
+          <label>Current location<input name="location" required placeholder="Maple Ridge yard" /></label>
+          <label>Status
+            <select name="status">
+              <option value="available">Available</option>
+              <option value="in_yard">In yard</option>
+              <option value="dispatched">Dispatched</option>
+              <option value="on_scene">On scene</option>
+            </select>
+          </label>
+          <label>Compliance tags<input name="compliance" placeholder="CVSE, PPE, First aid" /></label>
+          <button type="submit">Add to roster</button>
+        </form>
+      </details>
     </section>
   </main>
 

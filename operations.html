@@ -42,68 +42,53 @@
       </details>
     </section>
 
-    <section class="card">
+    <section class="card invoice-card">
       <div class="card-header">
         <div>
-          <h2>Dispatch snapshot</h2>
-          <p class="muted">Live overview of fleet readiness, calls, and revenue.</p>
+          <h2>Call invoice</h2>
+          <p class="muted">Select a job from dispatch, attach the ticket, and mark it ready for billing.</p>
         </div>
-        <div class="status-pill" id="secureStatus" title="Synaptics Systems security posture">Synaptics secure</div>
-      </div>
-
-      <div id="snapshot" class="snapshot-grid"></div>
-    </section>
-
-    <section class="card">
-      <div class="card-header">
-        <h2>Summary</h2>
         <div class="summary-actions">
-          <button id="recalculate" type="button">Recalculate now</button>
           <label class="job-link">
-            Attach to job
-            <select id="jobSelect"></select>
+            Call ID
+            <select class="job-select invoice-select"></select>
           </label>
-          <button id="attachToJob" type="button" class="secondary">Apply to job</button>
         </div>
       </div>
-      <div id="summary"></div>
+
+      <div class="invoice-grid">
+        <div class="invoice-job"></div>
+        <div class="invoice-summary">
+          <h3>Invoice summary</h3>
+          <div class="summary-panel"></div>
+          <div class="invoice-controls">
+            <button class="recalculate" type="button">Recalculate now</button>
+            <button class="attach-to-job" type="button">Apply charges</button>
+            <button class="mark-invoiced" type="button" aria-label="Mark invoice as issued">Mark invoiced</button>
+            <button class="mark-paid" type="button" aria-label="Mark invoice as paid">Mark paid</button>
+          </div>
+        </div>
+      </div>
     </section>
 
     <section class="card">
       <div class="card-header">
         <div>
-          <h2>Active jobs</h2>
-          <p class="muted">Track dispatch flow from intake to drop-off.</p>
+          <h2>Dispatch handoff</h2>
+          <p class="muted">Close the loop between dispatch, invoicing, and the overview audit trail.</p>
         </div>
-        <button id="logActivity" type="button" class="secondary">Refresh activity</button>
-      </div>
-      <div id="jobBoard"></div>
-
-      <details class="custom-add">
-        <summary>Add new job</summary>
-        <form id="jobForm" class="custom-form two-col">
-          <label>Job ID<input name="id" required placeholder="JOB-2081" /></label>
-          <label>Customer<input name="customer" required placeholder="ICBC / retail" /></label>
-          <label>Location<input name="location" required placeholder="Highway 1 / 232 exit" /></label>
-          <label>Provider
-            <select name="provider" required></select>
-          </label>
-          <label>ETA<input name="eta" required placeholder="14:25" /></label>
-          <label>Notes<input name="notes" placeholder="Winch out, debris, etc." /></label>
-          <button type="submit">Create job</button>
-        </form>
-      </details>
-    </section>
-
-    <section class="card">
-      <div class="card-header">
-        <div>
-          <h2>Fleet roster</h2>
-          <p class="muted">Assets, operators, compliance, and readiness.</p>
+        <div class="summary-actions">
+          <a class="button secondary" href="dispatch.html">Open dispatch</a>
+          <a class="button secondary" href="index.html">View overview</a>
         </div>
-        <button id="rotateRoster" type="button" class="secondary">Rotate status</button>
       </div>
-      <div id="fleet"></div>
+      <div class="handoff-panel">
+        <p class="muted">Invoices stay in sync with dispatch assignments. Any driver updates or workflow changes will reflect on this page without reloading.</p>
+        <div class="handoff-meta">
+          <div class="pill">Live sync with dispatch</div>
+          <div class="pill muted-pill">Audit-ready history</div>
+        </div>
+      </div>
     </section>
   </main>
 

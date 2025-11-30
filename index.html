@@ -32,7 +32,7 @@
       </div>
       <div class="hero-card">
         <p class="muted">Security</p>
-        <div class="status-pill" id="secureStatus" title="Synaptics Systems security posture">Synaptics secure</div>
+        <div class="status-pill secure-status" title="Synaptics Systems security posture">Synaptics secure</div>
         <p class="muted">Hardened by Synaptics Systems stack and replicated offline.</p>
       </div>
     </section>
@@ -44,7 +44,7 @@
           <p class="muted">Live metrics from dispatch and fleet readiness.</p>
         </div>
       </div>
-      <div id="snapshot" class="snapshot-grid"></div>
+      <div class="snapshot-grid"></div>
     </section>
 
     <section class="card">
@@ -55,34 +55,22 @@
         </div>
         <a class="button secondary" href="operations.html">Adjust rates</a>
       </div>
-      <div id="summary"></div>
-    </section>
-
-    <section class="card">
-      <div class="card-header">
-        <div>
-          <h2>Dispatch snapshot</h2>
-          <p class="muted">Live overview of fleet readiness, calls, and revenue.</p>
-        </div>
-        <div class="status-pill" id="secureStatus" title="Synaptics Systems security posture">Synaptics secure</div>
-      </div>
-
-      <div id="snapshot" class="snapshot-grid"></div>
+      <div class="summary-panel"></div>
     </section>
 
     <section class="card">
       <div class="card-header">
         <h2>Summary</h2>
         <div class="summary-actions">
-          <button id="recalculate" type="button">Recalculate now</button>
+          <button class="recalculate" type="button">Recalculate now</button>
           <label class="job-link">
             Attach to job
-            <select id="jobSelect"></select>
+            <select class="job-select"></select>
           </label>
-          <button id="attachToJob" type="button" class="secondary">Apply to job</button>
+          <button class="attach-to-job" type="button" class="secondary">Apply to job</button>
         </div>
       </div>
-      <div id="fleet"></div>
+      <div class="summary-panel"></div>
     </section>
 
     <section class="card">
@@ -91,13 +79,13 @@
           <h2>Active jobs</h2>
           <p class="muted">Track dispatch flow from intake to drop-off.</p>
         </div>
-        <button id="logActivity" type="button" class="secondary">Refresh activity</button>
+        <button class="log-activity" type="button" class="secondary">Refresh activity</button>
       </div>
-      <div id="jobBoard"></div>
+      <div class="job-board"></div>
 
       <details class="custom-add">
         <summary>Add new job</summary>
-        <form id="jobForm" class="custom-form two-col">
+        <form class="job-form custom-form two-col">
           <label>Job ID<input name="id" required placeholder="JOB-2081" /></label>
           <label>Customer<input name="customer" required placeholder="ICBC / retail" /></label>
           <label>Location<input name="location" required placeholder="Highway 1 / 232 exit" /></label>
@@ -117,9 +105,9 @@
           <h2>Fleet roster</h2>
           <p class="muted">Assets, operators, compliance, and readiness.</p>
         </div>
-        <button id="rotateRoster" type="button" class="secondary">Rotate status</button>
+        <button class="rotate-roster" type="button" class="secondary">Rotate status</button>
       </div>
-      <div id="fleet"></div>
+      <div class="fleet-roster"></div>
     </section>
   </main>
 
