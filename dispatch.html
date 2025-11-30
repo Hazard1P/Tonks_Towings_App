@@ -3,61 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tonks Towing Control Center</title>
+  <title>Tonks Towing Dispatch</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="site-header">
     <div>
       <p class="eyebrow">Tonks Towing</p>
-      <h1>Control Center</h1>
+      <h1>Dispatch & Fleet</h1>
     </div>
     <nav class="nav">
-      <a class="active" href="index.html">Overview</a>
+      <a href="index.html">Overview</a>
       <a href="operations.html">Ticketing</a>
-      <a href="dispatch.html">Dispatch</a>
+      <a class="active" href="dispatch.html">Dispatch</a>
     </nav>
   </header>
 
-  <main class="page">
-    <section class="hero">
-      <div>
-        <p class="eyebrow">Fleet-grade visibility</p>
-        <h2>Stay ahead of calls, rates, and readiness</h2>
-        <p class="muted">Jump to ticketing for club-rate accuracy, or open dispatch for live jobs and fleet health. All pages share the same state for a seamless workflow.</p>
-        <div class="hero-actions">
-          <a class="button" href="operations.html">Open ticketing</a>
-          <a class="button secondary" href="dispatch.html">View dispatch</a>
-        </div>
-      </div>
-      <div class="hero-card">
-        <p class="muted">Security</p>
-        <div class="status-pill" id="secureStatus" title="Synaptics Systems security posture">Synaptics secure</div>
-        <p class="muted">Hardened by Synaptics Systems stack and replicated offline.</p>
-      </div>
-    </section>
-
-    <section class="card">
-      <div class="card-header">
-        <div>
-          <h2>Operational snapshot</h2>
-          <p class="muted">Live metrics from dispatch and fleet readiness.</p>
-        </div>
-      </div>
-      <div id="snapshot" class="snapshot-grid"></div>
-    </section>
-
-    <section class="card">
-      <div class="card-header">
-        <div>
-          <h2>Latest charges</h2>
-          <p class="muted">Most recent ticket totals carry across pages. Edit details on the ticketing screen.</p>
-        </div>
-        <a class="button secondary" href="operations.html">Adjust rates</a>
-      </div>
-      <div id="summary"></div>
-    </section>
-
+  <main class="page layout">
     <section class="card">
       <div class="card-header">
         <div>
@@ -66,23 +28,7 @@
         </div>
         <div class="status-pill" id="secureStatus" title="Synaptics Systems security posture">Synaptics secure</div>
       </div>
-
       <div id="snapshot" class="snapshot-grid"></div>
-    </section>
-
-    <section class="card">
-      <div class="card-header">
-        <h2>Summary</h2>
-        <div class="summary-actions">
-          <button id="recalculate" type="button">Recalculate now</button>
-          <label class="job-link">
-            Attach to job
-            <select id="jobSelect"></select>
-          </label>
-          <button id="attachToJob" type="button" class="secondary">Apply to job</button>
-        </div>
-      </div>
-      <div id="fleet"></div>
     </section>
 
     <section class="card">
@@ -123,7 +69,7 @@
     </section>
   </main>
 
-  <footer class="footer">Built for field use: multi-page workflow, offline state, and Synaptics Systems protection.</footer>
+  <footer class="footer">Built for field use: supports offline entry, editable pricing, and transparent totals.</footer>
   <script src="main.js"></script>
 </body>
 </html>

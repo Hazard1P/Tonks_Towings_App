@@ -61,6 +61,8 @@ const defaultRates = {
   ],
 };
 
+const STORAGE_KEY = 'tonks_towing_shared_state_v1';
+
 const state = {
   provider: 'BCAA',
   rates: cloneRates(defaultRates),
@@ -142,6 +144,33 @@ function cloneRates(rates) {
   return JSON.parse(JSON.stringify(rates));
 }
 
+function loadState() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) return null;
+    return JSON.parse(stored);
+  } catch (err) {
+    console.warn('Unable to load stored state', err);
+    return null;
+  }
+}
+
+function persistState() {
+  try {
+    const payload = {
+      provider: state.provider,
+      rates: state.rates,
+      selection: state.selection,
+      fleet: state.fleet,
+      jobs: state.jobs,
+      activity: state.activity,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  } catch (err) {
+    console.warn('Unable to persist shared state', err);
+  }
+}
+
 function createElement(tag, options = {}) {
   const el = document.createElement(tag);
   Object.assign(el, options);
@@ -162,6 +191,14 @@ function setSelection(provider, key, update) {
   if (!state.selection[provider]) state.selection[provider] = {};
   const current = getSelection(provider, key);
   state.selection[provider][key] = { ...current, ...update };
+  persistState();
+}
+
+function addActivity(entry) {
+  const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  state.activity.unshift({ entry, timestamp });
+  if (state.activity.length > 25) state.activity.pop();
+  persistState();
 }
 
 function addActivity(entry) {
@@ -172,6 +209,7 @@ function addActivity(entry) {
 
 function renderProviderOptions() {
   const select = document.querySelector('#provider');
+  if (!select) return;
   select.innerHTML = '';
   Object.keys(state.rates).forEach((provider) => {
     const opt = createElement('option', { value: provider, textContent: provider });
@@ -180,6 +218,7 @@ function renderProviderOptions() {
   });
   select.addEventListener('change', (ev) => {
     state.provider = ev.target.value;
+    persistState();
     renderRateTable();
     renderSummary();
   });
@@ -187,6 +226,7 @@ function renderProviderOptions() {
 
 function renderRateTable() {
   const container = document.querySelector('#rateTable');
+  if (!container) return;
   container.innerHTML = '';
 
   const header = createElement('div', { className: 'rate-row' });
@@ -213,6 +253,7 @@ function renderRateTable() {
     amountInput.addEventListener('change', () => {
       rate.amount = Number(amountInput.value) || 0;
       renderSummary();
+      persistState();
     });
 
     const selection = getSelection(state.provider, rate.key);
@@ -229,6 +270,7 @@ function renderRateTable() {
       const qty = Number(qtyInput.value) || 0;
       setSelection(state.provider, rate.key, { qty });
       renderSummary();
+      persistState();
     });
 
     const includeToggle = createElement('input', {
@@ -243,6 +285,7 @@ function renderRateTable() {
       setSelection(state.provider, rate.key, { include, qty });
       if (rate.type === 'flat') qtyInput.value = qty || 1;
       renderSummary();
+      persistState();
     });
 
     const unitHint = createElement('small', { style: 'color: var(--muted); display: block;' });
@@ -285,8 +328,9 @@ function calculateTotal() {
 }
 
 function renderSummary() {
-  const { total, lines } = calculateTotal();
   const container = document.querySelector('#summary');
+  if (!container) return;
+  const { total, lines } = calculateTotal();
   container.innerHTML = '';
 
   if (!lines.length) {
@@ -476,15 +520,75 @@ function wireControls() {
     renderRateTable();
     renderSummary();
   });
+}
 
-  document.querySelector('#clearSelection').addEventListener('click', () => {
-    state.selection[state.provider] = {};
-    renderRateTable();
-    renderSummary();
+function renderSnapshot() {
+  const container = document.querySelector('#snapshot');
+  if (!container) return;
+  container.innerHTML = '';
+  const active = state.jobs.length;
+  const delivered = state.jobs.filter((j) => j.status === 'Delivered').length;
+  const readyFleet = state.fleet.filter((f) => f.status === 'available').length;
+  const dispatched = state.fleet.filter((f) => f.status === 'dispatched').length;
+  const revenue = state.jobs.reduce((acc, job) => acc + (job.revenue?.total || 0), 0);
+
+  const cards = [
+    { label: 'Active jobs', value: active },
+    { label: 'Delivered today', value: delivered },
+    { label: 'Fleet ready', value: readyFleet },
+    { label: 'Out on calls', value: dispatched },
+    { label: 'Projected revenue', value: formatCurrency(revenue) },
+  ];
+
+  cards.forEach((card) => {
+    const item = createElement('div', { className: 'snapshot-item' });
+    item.append(
+      createElement('p', { className: 'muted', textContent: card.label }),
+      createElement('strong', { className: 'snapshot-value', textContent: card.value }),
+    );
+    container.appendChild(item);
   });
+}
 
-  document.querySelector('#recalculate').addEventListener('click', () => {
-    renderSummary();
+function renderFleet() {
+  const container = document.querySelector('#fleet');
+  if (!container) return;
+  container.innerHTML = '';
+
+  state.fleet.forEach((truck) => {
+    const row = createElement('div', { className: 'fleet-row' });
+    const statusMap = {
+      available: 'Available',
+      dispatched: 'Dispatched',
+      on_scene: 'On scene',
+      in_yard: 'In yard',
+    };
+    row.append(
+      createElement('div', { className: 'fleet-id', textContent: `${truck.id} · ${truck.type}` }),
+      createElement('div', { textContent: truck.operator }),
+      createElement('div', { className: 'muted', textContent: truck.location }),
+      createElement('div', { className: 'status', textContent: statusMap[truck.status] || truck.status }),
+      createElement('div', { className: 'muted', textContent: truck.compliance.join(', ') }),
+    );
+    container.appendChild(row);
+  });
+}
+
+function renderJobs() {
+  const container = document.querySelector('#jobBoard');
+  if (!container) return;
+  container.innerHTML = '';
+  const logContainer = createElement('div', { className: 'activity-log' });
+  const activityTitle = createElement('div', { className: 'activity-title', textContent: 'Activity stream' });
+  logContainer.appendChild(activityTitle);
+
+  state.activity.forEach((entry) => {
+    const line = createElement('div', { className: 'activity-line' });
+    line.append(
+      createElement('span', { className: 'muted', textContent: entry.timestamp }),
+      createElement('span', { textContent: entry.entry }),
+    );
+    logContainer.appendChild(line);
   });
 
   document.querySelector('#attachToJob').addEventListener('click', attachChargesToJob);
@@ -501,20 +605,98 @@ function wireControls() {
 
   document.querySelector('#customItemForm').addEventListener('submit', (ev) => {
     ev.preventDefault();
-    const form = ev.target;
-    const label = form.label.value.trim();
-    const amount = Number(form.amount.value) || 0;
-    const type = form.type.value;
-
-    if (!label) return;
-    const key = `${label.toLowerCase().replace(/[^a-z0-9]+/g, '_')}_${Date.now()}`;
-    const newItem = { key, label, amount, type };
-    state.rates[state.provider].push(newItem);
-    setSelection(state.provider, key, { include: true, qty: type === 'flat' ? 1 : 0 });
+    const data = Object.fromEntries(new FormData(form));
+    const job = {
+      id: data.id.trim(),
+      customer: data.customer.trim(),
+      location: data.location.trim(),
+      provider: data.provider,
+      eta: data.eta.trim(),
+      notes: data.notes.trim(),
+      status: 'Dispatched',
+      revenue: null,
+    };
+    state.jobs.unshift(job);
+    addActivity(`${job.id} created for ${job.customer}`);
     form.reset();
-    renderRateTable();
-    renderSummary();
+    persistState();
+    renderJobSelect();
+    renderSnapshot();
+    renderJobs();
   });
+}
+
+function wireControls() {
+  const resetRatesBtn = document.querySelector('#resetRates');
+  if (resetRatesBtn) {
+    resetRatesBtn.addEventListener('click', () => {
+      state.rates = cloneRates(defaultRates);
+      state.selection[state.provider] = {};
+      persistState();
+      renderRateTable();
+      renderSummary();
+    });
+  }
+
+  const clearSelectionBtn = document.querySelector('#clearSelection');
+  if (clearSelectionBtn) {
+    clearSelectionBtn.addEventListener('click', () => {
+      state.selection[state.provider] = {};
+      persistState();
+      renderRateTable();
+      renderSummary();
+    });
+  }
+
+  const recalcBtn = document.querySelector('#recalculate');
+  if (recalcBtn) {
+    recalcBtn.addEventListener('click', () => {
+      renderSummary();
+    });
+  }
+
+  const attachBtn = document.querySelector('#attachToJob');
+  if (attachBtn) attachBtn.addEventListener('click', attachChargesToJob);
+
+  const logButton = document.querySelector('#logActivity');
+  if (logButton) {
+    logButton.addEventListener('click', () => {
+      addActivity('Security check performed via Synaptics Systems stack');
+      renderJobs();
+    });
+  }
+
+  const rotateBtn = document.querySelector('#rotateRoster');
+  if (rotateBtn) {
+    rotateBtn.addEventListener('click', () => {
+      if (!state.fleet.length) return;
+      const last = state.fleet.pop();
+      state.fleet.unshift(last);
+      persistState();
+      renderFleet();
+    });
+  }
+
+  const customItemForm = document.querySelector('#customItemForm');
+  if (customItemForm) {
+    customItemForm.addEventListener('submit', (ev) => {
+      ev.preventDefault();
+      const form = ev.target;
+      const label = form.label.value.trim();
+      const amount = Number(form.amount.value) || 0;
+      const type = form.type.value;
+
+      if (!label) return;
+      const key = `${label.toLowerCase().replace(/[^a-z0-9]+/g, '_')}_${Date.now()}`;
+      const newItem = { key, label, amount, type };
+      state.rates[state.provider].push(newItem);
+      setSelection(state.provider, key, { include: true, qty: type === 'flat' ? 1 : 0 });
+      persistState();
+      form.reset();
+      renderRateTable();
+      renderSummary();
+    });
+  }
 }
 
 function init() {

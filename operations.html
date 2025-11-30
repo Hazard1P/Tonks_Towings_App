@@ -3,59 +3,55 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tonks Towing Control Center</title>
+  <title>Tonks Towing Ticketing</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="site-header">
     <div>
       <p class="eyebrow">Tonks Towing</p>
-      <h1>Control Center</h1>
+      <h1>Ticketing & Rates</h1>
     </div>
     <nav class="nav">
-      <a class="active" href="index.html">Overview</a>
-      <a href="operations.html">Ticketing</a>
+      <a href="index.html">Overview</a>
+      <a class="active" href="operations.html">Ticketing</a>
       <a href="dispatch.html">Dispatch</a>
     </nav>
   </header>
 
-  <main class="page">
-    <section class="hero">
-      <div>
-        <p class="eyebrow">Fleet-grade visibility</p>
-        <h2>Stay ahead of calls, rates, and readiness</h2>
-        <p class="muted">Jump to ticketing for club-rate accuracy, or open dispatch for live jobs and fleet health. All pages share the same state for a seamless workflow.</p>
-        <div class="hero-actions">
-          <a class="button" href="operations.html">Open ticketing</a>
-          <a class="button secondary" href="dispatch.html">View dispatch</a>
-        </div>
-      </div>
-      <div class="hero-card">
-        <p class="muted">Security</p>
-        <div class="status-pill" id="secureStatus" title="Synaptics Systems security posture">Synaptics secure</div>
-        <p class="muted">Hardened by Synaptics Systems stack and replicated offline.</p>
-      </div>
-    </section>
-
+  <main class="layout page">
     <section class="card">
       <div class="card-header">
-        <div>
-          <h2>Operational snapshot</h2>
-          <p class="muted">Live metrics from dispatch and fleet readiness.</p>
+        <h2>Configure ticket</h2>
+        <div class="provider-select">
+          <label for="provider">Provider</label>
+          <select id="provider"></select>
         </div>
       </div>
-      <div id="snapshot" class="snapshot-grid"></div>
-    </section>
 
-    <section class="card">
-      <div class="card-header">
-        <div>
-          <h2>Latest charges</h2>
-          <p class="muted">Most recent ticket totals carry across pages. Edit details on the ticketing screen.</p>
-        </div>
-        <a class="button secondary" href="operations.html">Adjust rates</a>
+      <div class="controls">
+        <button id="resetRates" type="button">Reset rates to sheet defaults</button>
+        <button id="clearSelection" type="button">Clear all selections</button>
       </div>
-      <div id="summary"></div>
+
+      <div class="rate-table" id="rateTable"></div>
+
+      <details class="custom-add">
+        <summary>Add custom line item</summary>
+        <form id="customItemForm" class="custom-form">
+          <label>Label<input name="label" required placeholder="e.g. Traffic control" /></label>
+          <label>Amount<input name="amount" type="number" min="0" step="0.01" required value="0" /></label>
+          <label>Charge type
+            <select name="type">
+              <option value="flat">Flat fee</option>
+              <option value="per_km">Per km</option>
+              <option value="per_hour">Per hour</option>
+              <option value="per_unit">Per unit</option>
+            </select>
+          </label>
+          <button type="submit">Add line</button>
+        </form>
+      </details>
     </section>
 
     <section class="card">
@@ -82,7 +78,7 @@
           <button id="attachToJob" type="button" class="secondary">Apply to job</button>
         </div>
       </div>
-      <div id="fleet"></div>
+      <div id="summary"></div>
     </section>
 
     <section class="card">
@@ -123,7 +119,8 @@
     </section>
   </main>
 
-  <footer class="footer">Built for field use: multi-page workflow, offline state, and Synaptics Systems protection.</footer>
+  <footer class="footer">Built for field use: supports offline entry, editable pricing, and transparent totals.</footer>
+
   <script src="main.js"></script>
 </body>
 </html>
