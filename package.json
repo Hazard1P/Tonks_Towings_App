@@ -1,0 +1,8 @@
+{
+  "name": "tonks-towing-rate-calculator",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "echo 'No automated tests; open index.html in a browser to use the calculator.'"
+  }
+}
