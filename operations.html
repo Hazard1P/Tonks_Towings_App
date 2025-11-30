@@ -48,13 +48,26 @@
           <h2>Call invoice</h2>
           <p class="muted">Select a job from dispatch, attach the ticket, and mark it ready for billing.</p>
         </div>
+        <div class="status-pill secure-status" title="Synaptics Systems security posture">Synaptics secure</div>
+      </div>
+
+      <div class="snapshot-grid"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <h2>Summary</h2>
         <div class="summary-actions">
+          <button class="recalculate" type="button">Recalculate now</button>
           <label class="job-link">
-            Call ID
-            <select class="job-select invoice-select"></select>
+            Attach to job
+            <select class="job-select"></select>
           </label>
+          <button class="attach-to-job" type="button" class="secondary">Apply to job</button>
         </div>
       </div>
+      <div class="summary-panel"></div>
+    </section>
 
       <div class="invoice-grid">
         <div class="invoice-job"></div>
@@ -68,7 +81,24 @@
             <button class="mark-paid" type="button" aria-label="Mark invoice as paid">Mark paid</button>
           </div>
         </div>
+        <button class="log-activity" type="button" class="secondary">Refresh activity</button>
       </div>
+      <div class="job-board"></div>
+
+      <details class="custom-add">
+        <summary>Add new job</summary>
+        <form class="job-form custom-form two-col">
+          <label>Job ID<input name="id" required placeholder="JOB-2081" /></label>
+          <label>Customer<input name="customer" required placeholder="ICBC / retail" /></label>
+          <label>Location<input name="location" required placeholder="Highway 1 / 232 exit" /></label>
+          <label>Provider
+            <select name="provider" required></select>
+          </label>
+          <label>ETA<input name="eta" required placeholder="14:25" /></label>
+          <label>Notes<input name="notes" placeholder="Winch out, debris, etc." /></label>
+          <button type="submit">Create job</button>
+        </form>
+      </details>
     </section>
 
     <section class="card">
@@ -88,7 +118,9 @@
           <div class="pill">Live sync with dispatch</div>
           <div class="pill muted-pill">Audit-ready history</div>
         </div>
+        <button class="rotate-roster" type="button" class="secondary">Rotate status</button>
       </div>
+      <div class="fleet-roster"></div>
     </section>
   </main>
 

@@ -187,18 +187,6 @@ h1 { margin: 0; font-size: clamp(24px, 4vw, 34px); }
 .task-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .driver-select { min-width: 200px; }
 
-.dispatch-board { grid-column: 1 / -1; }
-.dispatch-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
-.dispatch-columns { display: grid; grid-template-columns: 1.1fr 1fr; gap: 12px; }
-.workflow-panel, .task-panel {
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.02);
-}
-.panel-header { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 10px; }
-.panel-header h3 { margin: 0; }
-
 .invoice-grid {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
@@ -355,5 +343,4 @@ input[type="number"], input[type="text"], select {
   .rate-row header:nth-child(n+3) { display: none; }
   .controls { flex-direction: column; }
   .invoice-grid { grid-template-columns: 1fr; }
-  .dispatch-columns { grid-template-columns: 1fr; }
 }
