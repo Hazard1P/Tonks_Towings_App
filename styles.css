@@ -187,6 +187,39 @@ h1 { margin: 0; font-size: clamp(24px, 4vw, 34px); }
 .task-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .driver-select { min-width: 200px; }
 
+.invoice-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.invoice-job {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  display: grid;
+  gap: 8px;
+}
+
+.invoice-job .meta { display: grid; gap: 4px; }
+.invoice-tags { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.invoice-summary h3 { margin: 0 0 8px; }
+.invoice-controls { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.invoice-status { color: var(--muted); font-weight: 700; }
+
+.handoff-panel {
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  display: grid;
+  gap: 8px;
+}
+
+.handoff-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+
 .fleet-row {
   display: grid;
   grid-template-columns: repeat(6, minmax(80px, 1fr));
@@ -309,4 +342,5 @@ input[type="number"], input[type="text"], select {
   .rate-row { grid-template-columns: repeat(2, 1fr); }
   .rate-row header:nth-child(n+3) { display: none; }
   .controls { flex-direction: column; }
+  .invoice-grid { grid-template-columns: 1fr; }
 }

@@ -86,6 +86,7 @@ const state = {
   provider: 'BCAA',
   rates: cloneRates(defaultRates),
   selection: {},
+  invoiceJobId: null,
   fleet: [],
   jobs: [],
   activity: [],
@@ -141,6 +142,7 @@ const baseJobs = [
     status: 'Awaiting dispatch',
     assignedDriver: null,
     revenue: null,
+    invoiceStatus: 'Draft',
   },
   {
     id: 'JOB-2042',
@@ -152,6 +154,7 @@ const baseJobs = [
     status: 'Dispatched',
     assignedDriver: 'TRK-21',
     revenue: null,
+    invoiceStatus: 'Draft',
   },
   {
     id: 'JOB-2043',
@@ -163,6 +166,7 @@ const baseJobs = [
     status: 'On scene',
     assignedDriver: 'TRK-3',
     revenue: null,
+    invoiceStatus: 'Draft',
   },
 ];
 
@@ -305,6 +309,7 @@ function persistState() {
       provider: state.provider,
       rates: state.rates,
       selection: state.selection,
+      invoiceJobId: state.invoiceJobId,
       fleet: state.fleet,
       jobs: state.jobs,
       activity: state.activity,
@@ -679,6 +684,14 @@ function renderFleet() {
       container.appendChild(row);
     });
   });
+  const overviewLink = createElement('a', {
+    href: 'index.html',
+    className: 'button secondary',
+    textContent: 'Back to overview',
+  });
+  links.append(taskLink, ticketLink, overviewLink);
+
+  container.append(steps, links);
 }
 
 function renderJobs() {
@@ -761,8 +774,21 @@ function attachChargesToJob(selectEl) {
   const job = state.jobs.find((j) => j.id === jobId);
   if (!job) return;
   const { total, lines } = calculateTotal();
+  state.invoiceJobId = jobId;
+  job.invoiceStatus = job.invoiceStatus || 'Draft';
   job.revenue = { total, lines, provider: state.provider };
   addActivity(`${job.id} updated with ${formatCurrency(total)} from ${state.provider}`);
+  renderJobs();
+  renderSnapshot();
+  renderInvoice();
+}
+
+function updateInvoiceStatus(status) {
+  const job = getInvoiceJob();
+  if (!job) return;
+  job.invoiceStatus = status;
+  addActivity(`${job.id} marked ${status.toLowerCase()}`);
+  renderInvoice();
   renderJobs();
   renderSnapshot();
 }
@@ -917,6 +943,7 @@ function hydrateState() {
     state.provider = stored.provider || state.provider;
     state.rates = stored.rates || state.rates;
     state.selection = stored.selection || state.selection;
+    state.invoiceJobId = stored.invoiceJobId || state.invoiceJobId;
     state.fleet = stored.fleet || cloneRates({ baseFleet }).baseFleet || baseFleet;
     state.jobs = stored.jobs || cloneRates({ baseJobs }).baseJobs || baseJobs;
     state.activity = stored.activity || [];
@@ -925,6 +952,7 @@ function hydrateState() {
 
   state.fleet = cloneRates({ baseFleet }).baseFleet || baseFleet;
   state.jobs = cloneRates({ baseJobs }).baseJobs || baseJobs;
+  state.invoiceJobId = state.jobs[0]?.id || null;
 }
 
 function init() {
@@ -934,6 +962,7 @@ function init() {
   renderRateTable();
   renderSummary();
   renderJobSelect();
+  renderInvoice();
   renderSnapshot();
   renderFleet();
   renderJobs();

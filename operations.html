@@ -42,11 +42,11 @@
       </details>
     </section>
 
-    <section class="card">
+    <section class="card invoice-card">
       <div class="card-header">
         <div>
-          <h2>Dispatch snapshot</h2>
-          <p class="muted">Live overview of fleet readiness, calls, and revenue.</p>
+          <h2>Call invoice</h2>
+          <p class="muted">Select a job from dispatch, attach the ticket, and mark it ready for billing.</p>
         </div>
         <div class="status-pill secure-status" title="Synaptics Systems security posture">Synaptics secure</div>
       </div>
@@ -69,11 +69,17 @@
       <div class="summary-panel"></div>
     </section>
 
-    <section class="card">
-      <div class="card-header">
-        <div>
-          <h2>Active jobs</h2>
-          <p class="muted">Track dispatch flow from intake to drop-off.</p>
+      <div class="invoice-grid">
+        <div class="invoice-job"></div>
+        <div class="invoice-summary">
+          <h3>Invoice summary</h3>
+          <div class="summary-panel"></div>
+          <div class="invoice-controls">
+            <button class="recalculate" type="button">Recalculate now</button>
+            <button class="attach-to-job" type="button">Apply charges</button>
+            <button class="mark-invoiced" type="button" aria-label="Mark invoice as issued">Mark invoiced</button>
+            <button class="mark-paid" type="button" aria-label="Mark invoice as paid">Mark paid</button>
+          </div>
         </div>
         <button class="log-activity" type="button" class="secondary">Refresh activity</button>
       </div>
@@ -98,8 +104,19 @@
     <section class="card">
       <div class="card-header">
         <div>
-          <h2>Fleet roster</h2>
-          <p class="muted">Assets, operators, compliance, and readiness.</p>
+          <h2>Dispatch handoff</h2>
+          <p class="muted">Close the loop between dispatch, invoicing, and the overview audit trail.</p>
+        </div>
+        <div class="summary-actions">
+          <a class="button secondary" href="dispatch.html">Open dispatch</a>
+          <a class="button secondary" href="index.html">View overview</a>
+        </div>
+      </div>
+      <div class="handoff-panel">
+        <p class="muted">Invoices stay in sync with dispatch assignments. Any driver updates or workflow changes will reflect on this page without reloading.</p>
+        <div class="handoff-meta">
+          <div class="pill">Live sync with dispatch</div>
+          <div class="pill muted-pill">Audit-ready history</div>
         </div>
         <button class="rotate-roster" type="button" class="secondary">Rotate status</button>
       </div>
