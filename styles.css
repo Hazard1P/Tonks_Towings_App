@@ -160,6 +160,33 @@ h1 { margin: 0; font-size: clamp(24px, 4vw, 34px); }
 .activity-title { font-weight: 700; margin-bottom: 6px; }
 .activity-line { display: flex; gap: 8px; align-items: center; padding: 2px 0; }
 
+.task-summary { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.pill {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(56, 189, 248, 0.12);
+  color: var(--accent);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  font-weight: 700;
+}
+.pill.muted-pill {
+  background: rgba(148, 163, 184, 0.12);
+  color: var(--text);
+  border-color: rgba(148, 163, 184, 0.35);
+}
+
+.task-board { display: grid; gap: 12px; }
+.task-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+}
+.task-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.task-meta { display: grid; gap: 4px; margin-bottom: 10px; }
+.task-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.driver-select { min-width: 200px; }
+
 .fleet-row {
   display: grid;
   grid-template-columns: repeat(5, minmax(80px, 1fr));

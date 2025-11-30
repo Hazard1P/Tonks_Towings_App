@@ -96,7 +96,7 @@ const baseFleet = [
     id: 'TRK-21',
     type: 'Flatbed',
     operator: 'Sam Tonks',
-    status: 'available',
+    status: 'dispatched',
     location: 'Maple Ridge yard',
     compliance: ['CVSE', 'First aid', 'PPE'],
   },
@@ -134,7 +134,8 @@ const baseJobs = [
     provider: 'BCAA',
     eta: '12:15',
     notes: 'Winch out, muddy shoulder',
-    status: 'Dispatched',
+    status: 'Awaiting dispatch',
+    assignedDriver: null,
     revenue: null,
   },
   {
@@ -144,7 +145,8 @@ const baseJobs = [
     provider: 'ParkAndFly',
     eta: '12:40',
     notes: 'Flat tire, needs dollies',
-    status: 'En route',
+    status: 'Dispatched',
+    assignedDriver: 'TRK-21',
     revenue: null,
   },
   {
@@ -155,12 +157,118 @@ const baseJobs = [
     eta: '13:10',
     notes: 'Motorcycle premium',
     status: 'On scene',
+    assignedDriver: 'TRK-3',
     revenue: null,
   },
 ];
 
 function cloneRates(rates) {
   return JSON.parse(JSON.stringify(rates));
+}
+
+
+function getAvailableDrivers() {
+  return state.fleet.filter((truck) => truck.status === 'available' || truck.status === 'in_yard');
+}
+
+function dispatchJob(jobId, driverId) {
+  const job = state.jobs.find((j) => j.id === jobId);
+  const driver = state.fleet.find((t) => t.id === driverId);
+  if (!job || !driver) return;
+  job.assignedDriver = driverId;
+  job.status = job.status === 'Delivered' ? job.status : 'Dispatched';
+  driver.status = 'dispatched';
+  driver.location = job.location;
+  addActivity(`${job.id} assigned to ${driver.id} (${driver.operator})`);
+  persistState();
+  renderSnapshot();
+  renderJobs();
+  renderFleet();
+  renderDispatchTasks();
+}
+
+function renderDispatchTasks() {
+  const container = document.querySelector('#dispatchTasks');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const outstanding = state.jobs.filter(
+    (job) => job.status !== 'Delivered' && (job.status === 'Awaiting dispatch' || !job.assignedDriver),
+  );
+  const availableDrivers = getAvailableDrivers();
+
+  const summary = createElement('div', { className: 'task-summary' });
+  summary.append(
+    createElement('div', {
+      className: 'pill',
+      textContent: `${outstanding.length} job${outstanding.length === 1 ? '' : 's'} waiting`,
+    }),
+    createElement('div', {
+      className: 'pill muted-pill',
+      textContent: `${availableDrivers.length} driver${availableDrivers.length === 1 ? '' : 's'} available`,
+    }),
+  );
+  container.appendChild(summary);
+
+  if (!outstanding.length) {
+    const empty = createElement('p', {
+      className: 'muted',
+      textContent: 'All calls have been paired with a driver. New intake will show up here automatically.',
+    });
+    container.appendChild(empty);
+    return;
+  }
+
+  const board = createElement('div', { className: 'task-board' });
+  outstanding.forEach((job) => {
+    const card = createElement('div', { className: 'task-card' });
+    const header = createElement('div', { className: 'task-card-header' });
+    header.append(
+      createElement('strong', { textContent: job.id }),
+      createElement('span', { className: 'badge', textContent: job.status }),
+    );
+
+    const meta = createElement('div', { className: 'task-meta' });
+    meta.append(
+      createElement('div', { textContent: `${job.customer} · ${job.provider}` }),
+      createElement('div', { className: 'muted', textContent: job.location }),
+      createElement('div', { className: 'muted', textContent: `ETA ${job.eta}` }),
+      createElement('div', { className: 'muted', textContent: job.notes || 'No notes' }),
+    );
+
+    const controlRow = createElement('div', { className: 'task-controls' });
+    const driverSelect = createElement('select', { className: 'driver-select' });
+    const placeholder = createElement('option', { value: '', textContent: 'Select driver' });
+    driverSelect.appendChild(placeholder);
+    availableDrivers.forEach((driver) => {
+      const opt = createElement('option', {
+        value: driver.id,
+        textContent: `${driver.id} · ${driver.operator}`,
+      });
+      driverSelect.appendChild(opt);
+    });
+    const assignBtn = createElement('button', { type: 'button', textContent: 'Dispatch to driver' });
+    assignBtn.disabled = !availableDrivers.length;
+    assignBtn.addEventListener('click', () => {
+      if (!driverSelect.value) return;
+      dispatchJob(job.id, driverSelect.value);
+    });
+
+    controlRow.append(driverSelect, assignBtn);
+    if (job.assignedDriver) {
+      controlRow.append(
+        createElement('div', {
+          className: 'muted',
+          textContent: `Current: ${job.assignedDriver}`,
+        }),
+      );
+    }
+
+    card.append(header, meta, controlRow);
+    board.appendChild(card);
+  });
+
+  container.appendChild(board);
 }
 
 function loadState() {
@@ -401,6 +509,7 @@ function renderSnapshot() {
   container.innerHTML = '';
   const active = state.jobs.length;
   const delivered = state.jobs.filter((j) => j.status === 'Delivered').length;
+  const awaitingDispatch = state.jobs.filter((j) => j.status === 'Awaiting dispatch').length;
   const readyFleet = state.fleet.filter((f) => f.status === 'available').length;
   const dispatched = state.fleet.filter((f) => f.status === 'dispatched').length;
   const revenue = state.jobs.reduce((acc, job) => acc + (job.revenue?.total || 0), 0);
@@ -408,6 +517,7 @@ function renderSnapshot() {
   const cards = [
     { label: 'Active jobs', value: active },
     { label: 'Delivered today', value: delivered },
+    { label: 'Awaiting dispatch', value: awaitingDispatch },
     { label: 'Fleet ready', value: readyFleet },
     { label: 'Out on calls', value: dispatched },
     { label: 'Projected revenue', value: formatCurrency(revenue) },
@@ -476,6 +586,10 @@ function renderJobs() {
       createElement('div', { className: 'muted', textContent: job.location }),
       createElement('div', { className: 'muted', textContent: `ETA ${job.eta}` }),
       createElement('div', { className: 'muted', textContent: job.notes || 'No notes' }),
+      createElement('div', {
+        className: 'muted',
+        textContent: job.assignedDriver ? `Driver: ${job.assignedDriver}` : 'No driver assigned',
+      }),
     );
     const actions = createElement('div', { className: 'job-actions' });
     const nextButton = createElement('button', { type: 'button', textContent: 'Advance status' });
@@ -495,13 +609,22 @@ function renderJobs() {
 function advanceJob(jobId) {
   const job = state.jobs.find((j) => j.id === jobId);
   if (!job) return;
-  const order = ['Dispatched', 'En route', 'On scene', 'Delivered'];
+  const order = ['Awaiting dispatch', 'Dispatched', 'En route', 'On scene', 'Delivered'];
   const idx = order.indexOf(job.status);
   const next = order[Math.min(idx + 1, order.length - 1)];
   job.status = next;
+  if (job.assignedDriver) {
+    const driver = state.fleet.find((t) => t.id === job.assignedDriver);
+    if (driver) {
+      driver.status = next === 'Delivered' ? 'available' : next === 'On scene' ? 'on_scene' : 'dispatched';
+      if (next === 'Delivered') driver.location = 'Returning to yard';
+      persistState();
+    }
+  }
   addActivity(`${job.id} moved to ${next}`);
   renderSnapshot();
   renderJobs();
+  renderDispatchTasks();
 }
 
 function attachChargesToJob() {
@@ -534,7 +657,8 @@ function wireJobForm() {
       provider: data.provider,
       eta: data.eta.trim(),
       notes: data.notes.trim(),
-      status: 'Dispatched',
+      status: 'Awaiting dispatch',
+      assignedDriver: null,
       revenue: null,
     };
     state.jobs.unshift(job);
@@ -543,6 +667,7 @@ function wireJobForm() {
     renderJobSelect();
     renderSnapshot();
     renderJobs();
+    renderDispatchTasks();
   });
 }
 
@@ -614,10 +739,25 @@ function wireControls() {
   }
 }
 
-function init() {
+function hydrateState() {
+  const stored = loadState();
+  if (stored) {
+    state.provider = stored.provider || state.provider;
+    state.rates = stored.rates || state.rates;
+    state.selection = stored.selection || state.selection;
+    state.fleet = stored.fleet || cloneRates({ baseFleet }).baseFleet || baseFleet;
+    state.jobs = stored.jobs || cloneRates({ baseJobs }).baseJobs || baseJobs;
+    state.activity = stored.activity || [];
+    return;
+  }
+
   state.fleet = cloneRates({ baseFleet }).baseFleet || baseFleet;
   state.jobs = cloneRates({ baseJobs }).baseJobs || baseJobs;
-  addActivity('System ready with Synaptics Systems hardening');
+}
+
+function init() {
+  hydrateState();
+  if (!state.activity.length) addActivity('System ready with Synaptics Systems hardening');
   renderProviderOptions();
   renderRateTable();
   renderSummary();
@@ -625,6 +765,7 @@ function init() {
   renderSnapshot();
   renderFleet();
   renderJobs();
+  renderDispatchTasks();
   wireJobForm();
   wireControls();
 }
