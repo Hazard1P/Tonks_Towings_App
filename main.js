@@ -1,63 +1,82 @@
 const defaultRates = {
   BCAA: [
     { key: 'tow', label: 'Tow', amount: 52.53, type: 'flat' },
-    { key: 'service', label: 'Service', amount: 44.2, type: 'flat' },
-    { key: 'dollies', label: 'Dollies', amount: 14.72, type: 'flat' },
-    { key: 'basic_hook', label: 'Basic hook up', amount: 75.0, type: 'flat' },
-    { key: 'km_over', label: 'Km over (per km)', amount: 2.1, type: 'per_km' },
-    { key: 'dollies_premium', label: 'Dollies premium #1', amount: 10.0, type: 'flat' },
-    { key: 'mvp_premium', label: 'MVP premium', amount: 19.0, type: 'flat' },
-    { key: 'heavy_rush', label: 'Heavy rush', amount: 20.0, type: 'flat' },
-    { key: 'hs_over_30', label: 'HS over 30 min', amount: 14.25, type: 'flat' },
-    { key: 'max_time_call', label: 'Max time call', amount: 24.15, type: 'flat' },
-    { key: 'hs_time_830_330', label: 'HS time 8:30 - 3:30', amount: 6.3, type: 'per_hour' },
-    { key: 'hs_time_330_630', label: 'HS time 3:30 - 6:30', amount: 9.45, type: 'per_hour' },
-    { key: 'hs_time_after_6', label: 'HS time after 6pm', amount: 9.44, type: 'per_hour' },
-    { key: 'hs_tmt', label: 'HS TMT', amount: 10.0, type: 'flat' },
-    { key: 'hs_km_over', label: 'HS km over', amount: 11.55, type: 'per_km' },
-    { key: 'cleanup', label: 'Clean up / parts', amount: 10.0, type: 'flat' },
-    { key: 'extra_calls', label: 'Extra calls', amount: 0, type: 'flat' },
-    { key: 'jump_start', label: 'Jump start', amount: 25.0, type: 'flat' },
-    { key: 'gas', label: 'Gas', amount: 5.0, type: 'flat' },
-    { key: 'unlock', label: 'Unlock', amount: 22.5, type: 'flat' },
-    { key: 's_w', label: 'S/W', amount: 25.0, type: 'flat' },
-    { key: 'prime', label: 'Prime', amount: 75.0, type: 'flat' },
-    { key: 'tcs', label: 'TCs', amount: 25.0, type: 'flat' },
-    { key: 'on_hook_call', label: 'On hook call time', amount: 25.0, type: 'flat' },
-    { key: 'lake_call', label: 'Lake call', amount: 20.0, type: 'flat' },
-    { key: 'hazardous', label: 'Hazardous surcharge', amount: 11.44, type: 'flat' },
-    { key: 'bio', label: 'Bio / yard', amount: 45.0, type: 'flat' },
-    { key: 'winch_per_tire', label: 'Winch per tire', amount: 25.0, type: 'per_unit' },
-    { key: 'rv_premium', label: 'RV premium', amount: 25.0, type: 'flat' },
-    { key: 'key_call', label: '8 key call', amount: 3.0, type: 'flat' },
-    { key: 'kms_per_hour', label: 'KM per hour', amount: 25.0, type: 'per_hour' },
-    { key: 'storage', label: 'Storage', amount: 25.0, type: 'per_unit' },
-    { key: 'battery_install', label: 'Battery install', amount: 10.0, type: 'flat' },
-    { key: 'abandoned', label: 'Abandoned vehicle', amount: 50.0, type: 'flat' },
-    { key: 'storage_premium', label: 'Storage premium', amount: 15.0, type: 'per_unit' },
-    { key: 'motorcycle_premium', label: 'Motorcycle premium', amount: 20.0, type: 'flat' },
+    { key: 'service', label: 'Service', amount: 47.94, type: 'flat' },
+    { key: 'dollies', label: 'Dollies', amount: 30.6, type: 'flat' },
+    { key: 'km_tow_service', label: 'Km tow / Service', amount: 2.64, type: 'per_km' },
+    { key: 'km_plus_after_5', label: 'Km Plus after 5', amount: 2.85, type: 'per_km' },
+    { key: 'km_reg_after_5', label: 'Km Reg after 5', amount: 2.85, type: 'per_km' },
+    { key: 'hwy_rush', label: 'Hwy Rush 6:30–9:30 / 3:30–6:30', amount: 14.25, type: 'flat' },
+    { key: 'tire_change_and_tow', label: 'Tire change and Tow', amount: 13.25, type: 'flat' },
+    { key: 'recovery_basic_qtr', label: 'Recovery beyond basic per 1/4 hr', amount: 19.08, type: 'per_unit' },
+    { key: 'bridge_crossing', label: 'Bridge crossing am–pm', amount: 4.25, type: 'flat' },
+    { key: 'underground', label: 'Underground', amount: 19.08, type: 'flat' },
+    { key: 'key_release', label: 'Key and Release', amount: 14.25, type: 'flat' },
+    { key: 'tow_and_recovery', label: 'Tow and Recovery', amount: 83.14, type: 'flat' },
+    { key: 'motorcycle_hookup', label: 'Motorcycle hookup (Deck only)', amount: 23.63, type: 'flat' },
+    { key: 'deck_rate', label: 'Deck rate', amount: 39.15, type: 'flat' },
+    { key: 'rv_tire_change', label: 'RV tire change surcharge', amount: 13.63, type: 'flat' },
+    { key: 'heavy_truck', label: 'Heavy truck surcharge', amount: 53.6, type: 'flat' },
+    { key: 'tc_tow', label: 'TC Tow, 1-tons, Loaded 3/4 ton', amount: 36.4, type: 'flat' },
+    { key: 'km_after_5', label: 'Km after 5', amount: 2.85, type: 'per_km' },
+    { key: 'ta_tow', label: 'TA Tow, Motorhomes 24–29 ft', amount: 89.76, type: 'flat' },
+    { key: 'km_at_9', label: 'Km at 9', amount: 3.7, type: 'per_km' },
+    { key: 'tz_motorhomes', label: 'TZ Motorhomes over 30 ft per hr', amount: 200.0, type: 'per_hour' },
+    { key: 'tandem_beyond_first_hour', label: 'Tandem beyond 1st hr (per 15 min)', amount: 50.0, type: 'per_unit' },
+    { key: 'cash_call_retention', label: 'Cash call Tow / Service Ret. –10%', amount: 0, type: 'flat' },
+    { key: 'bonus', label: 'Bonus', amount: 5.5, type: 'flat' },
+    { key: 'late_night', label: 'Late night calls 11 pm–6 am', amount: 12.5, type: 'flat' },
+    { key: 'fuel_surcharge_21', label: 'Fuel surcharge 21%', amount: 0.21, type: 'percent' },
+    { key: 'fuel_surcharge_25', label: 'Fuel surcharge 25%', amount: 0.25, type: 'percent' },
+  ],
+  PDG: [
+    { key: 'tow', label: 'Tow', amount: 65.0, type: 'flat' },
+    { key: 'service', label: 'Service', amount: 65.0, type: 'flat' },
+    { key: 'dollies_or_deck', label: 'Dollies or Deck', amount: 45.0, type: 'flat' },
+    { key: 'km_after_3', label: 'Km after 3', amount: 2.75, type: 'per_km' },
+    { key: 'recovery', label: 'Recovery', amount: 65.0, type: 'flat' },
+    { key: 'recovery_after_20', label: 'Recovery after 20 min (per min)', amount: 1.5, type: 'per_unit' },
+    { key: 'underground', label: 'Underground', amount: 25.0, type: 'flat' },
+    { key: 'second_service', label: '2nd service on 1st call', amount: 32.5, type: 'flat' },
+    { key: 'cancelled_dispatched', label: 'Cancelled after dispatched', amount: 20.0, type: 'flat' },
+    { key: 'bridge_peak', label: 'Bridge 6–9:30am / 3–6:30pm', amount: 21.0, type: 'flat' },
+    { key: 'goa', label: 'GOA (No Km)', amount: 60.0, type: 'flat' },
+    { key: 'highway_premium', label: 'Highway premium', amount: 25.0, type: 'flat' },
+    { key: 'ev_premium', label: 'Electric vehicle premium', amount: 100.0, type: 'flat' },
+    { key: 'after_hours', label: 'After hours premium', amount: 20.0, type: 'flat' },
+    { key: 'fuel_surcharge_21', label: 'Fuel surcharge 21%', amount: 0.21, type: 'percent' },
+    { key: 'fuel_surcharge_25', label: 'Fuel surcharge 25%', amount: 0.25, type: 'percent' },
   ],
   Sykes: [
-    { key: 'tow_recovery', label: 'Tow/Recovery up to 5 km', amount: 58.0, type: 'flat' },
-    { key: 'km_after', label: 'Km after first 5', amount: 58.0, type: 'per_km' },
-    { key: 'dollies', label: 'Dollies', amount: 0, type: 'flat' },
-    { key: 'rush', label: 'Rush call', amount: 0, type: 'flat' },
-    { key: 'four_by_four', label: '4x4 Tow', amount: 0, type: 'flat' },
-    { key: 'over_4500', label: 'Over 4500 kg curb weight', amount: 0, type: 'flat' },
-    { key: 'ccanchi', label: 'CCANCHI', amount: 0, type: 'flat' },
-    { key: 'long_distance', label: 'Long distance from yard', amount: 0, type: 'per_km' },
-    { key: 'mechanic', label: 'Mechanic (hr rate)', amount: 58.0, type: 'per_hour' },
-    { key: 'leave_service', label: 'Leave service location', amount: 0, type: 'flat' },
-    { key: 'luxury_premium', label: 'Luxury (Tesla, Porsche, Land Rover)', amount: 0, type: 'flat' },
-    { key: 'after_hours_meet', label: 'After hours meet owner at lot', amount: 58.0, type: 'flat' },
-    { key: 'before_hours_meet', label: 'Before hours meet owner at lot', amount: 58.0, type: 'flat' },
+    { key: 'tow_recovery_15', label: 'Tow or Recovery up to 15 min', amount: 58.0, type: 'flat' },
+    { key: 'service', label: 'Service', amount: 50.0, type: 'flat' },
+    { key: 'dollies', label: 'Dollies', amount: 35.0, type: 'flat' },
+    { key: 'km_after_5', label: 'Km after 5', amount: 2.65, type: 'per_km' },
+    { key: 'deck_premium', label: 'Deck request premium', amount: 65.0, type: 'flat' },
+    { key: 'standby_winch', label: 'Standby / Winch per hr', amount: 82.0, type: 'per_hour' },
+    { key: 'driveshaft', label: 'Driveshaft', amount: 65.0, type: 'flat' },
+    { key: 'extra_service', label: 'Extra service', amount: 25.0, type: 'flat' },
+    { key: 'md_tow', label: 'MD Tow (≥ 2700 kg curb weight)', amount: 88.0, type: 'flat' },
+    { key: 'md_km_after_5', label: 'Km after 5 > 2700 kg', amount: 3.0, type: 'per_km' },
+    { key: 'hd_tow_per_hr', label: 'Heavy Tow per hr', amount: 185.0, type: 'per_hour' },
+    { key: 'cancel_under_10', label: 'Cancelled under 10 min', amount: 20.0, type: 'flat' },
+    { key: 'cancel_over_10', label: 'Cancelled over 10 min', amount: 55.0, type: 'flat' },
+    { key: 'underground', label: 'Underground', amount: 45.0, type: 'flat' },
+    { key: 'underground_peak', label: 'Underground service 6–9:30am / 2:30–6:30pm', amount: 115.0, type: 'flat' },
+    { key: 'luxury_service', label: 'Luxury service (Lexus, Porsche)', amount: 120.0, type: 'flat' },
+    { key: 'secondary_accident', label: 'Secondary accident hookup', amount: 210.0, type: 'flat' },
+    { key: 'tender', label: 'Tender', amount: 82.0, type: 'flat' },
+    { key: 'ev_premium', label: 'Electric vehicle premium', amount: 115.0, type: 'flat' },
+    { key: 'fuel_surcharge_21', label: 'Fuel surcharge 21%', amount: 0.21, type: 'percent' },
+    { key: 'fuel_surcharge_25', label: 'Fuel surcharge 25%', amount: 0.25, type: 'percent' },
   ],
   ParkAndFly: [
-    { key: 'pick_up', label: 'Pick up', amount: 60.0, type: 'flat' },
-    { key: 'drop_off_owner', label: 'Drop off to owner at lot', amount: 60.0, type: 'flat' },
-    { key: 'drop_off_other', label: 'Drop off to some other lot', amount: 0, type: 'flat' },
-    { key: 'km_from_yard', label: 'Km from the yard to owner', amount: 0, type: 'per_km' },
-    { key: 'km_from_owner', label: 'Km from owner to other lot', amount: 0, type: 'per_km' },
+    { key: 'lot_move', label: 'Lot move', amount: 55.0, type: 'flat' },
+    { key: 'dollies', label: 'Dollies', amount: 40.0, type: 'flat' },
+    { key: 'service', label: 'Service', amount: 45.0, type: 'flat' },
+    { key: 'lot_to_lot', label: 'Tow from one lot to another lot', amount: 65.0, type: 'flat' },
+    { key: 'fuel_surcharge_21', label: 'Fuel surcharge 21%', amount: 0.21, type: 'percent' },
+    { key: 'fuel_surcharge_25', label: 'Fuel surcharge 25%', amount: 0.25, type: 'percent' },
   ],
 };
 
@@ -201,12 +220,6 @@ function addActivity(entry) {
   persistState();
 }
 
-function addActivity(entry) {
-  const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  state.activity.unshift({ entry, timestamp });
-  if (state.activity.length > 25) state.activity.pop();
-}
-
 function renderProviderOptions() {
   const select = document.querySelector('#provider');
   if (!select) return;
@@ -243,17 +256,11 @@ function renderRateTable() {
 
     const title = createElement('div', { textContent: rate.label });
 
-    const amountInput = createElement('input', {
-      type: 'number',
-      min: '0',
-      step: '0.01',
-      value: rate.amount,
-      className: 'amount',
-    });
-    amountInput.addEventListener('change', () => {
-      rate.amount = Number(amountInput.value) || 0;
-      renderSummary();
-      persistState();
+    const amountDisplay = createElement('div', {
+      className: 'amount-display',
+      textContent: rate.type === 'percent'
+        ? `${Math.round(rate.amount * 10000) / 100}%`
+        : formatCurrency(rate.amount),
     });
 
     const selection = getSelection(state.provider, rate.key);
@@ -264,8 +271,10 @@ function renderRateTable() {
       value: selection.qty || 0,
       className: 'qty',
     });
-    qtyInput.placeholder = rate.type === 'flat' ? 'n/a' : '0';
-    qtyInput.disabled = rate.type === 'flat';
+    const qtyLocked = rate.type === 'flat' || rate.type === 'percent';
+    qtyInput.placeholder = qtyLocked ? 'n/a' : '0';
+    qtyInput.disabled = qtyLocked;
+    if (qtyLocked && !selection.qty) qtyInput.value = 1;
     qtyInput.addEventListener('input', () => {
       const qty = Number(qtyInput.value) || 0;
       setSelection(state.provider, rate.key, { qty });
@@ -279,11 +288,10 @@ function renderRateTable() {
     });
     includeToggle.addEventListener('change', () => {
       const include = includeToggle.checked;
-      const qty = rate.type === 'flat' && include && (!selection.qty || selection.qty === 0)
-        ? 1
-        : selection.qty;
+      const needsUnit = (rate.type === 'flat' || rate.type === 'percent') && include && (!selection.qty || selection.qty === 0);
+      const qty = needsUnit ? 1 : selection.qty;
       setSelection(state.provider, rate.key, { include, qty });
-      if (rate.type === 'flat') qtyInput.value = qty || 1;
+      if (qtyLocked) qtyInput.value = qty || 1;
       renderSummary();
       persistState();
     });
@@ -295,10 +303,12 @@ function renderRateTable() {
         ? 'per hour'
         : rate.type === 'per_unit'
           ? 'per unit'
-          : 'flat';
+          : rate.type === 'percent'
+            ? 'percent of subtotal'
+            : 'flat';
 
     const amountCell = createElement('div');
-    amountCell.append(amountInput, unitHint);
+    amountCell.append(amountDisplay, unitHint);
 
     row.append(title, amountCell, qtyInput, includeToggle);
     container.appendChild(row);
@@ -307,15 +317,22 @@ function renderRateTable() {
 
 function calculateTotal() {
   const providerRates = state.rates[state.provider] || [];
-  let total = 0;
+  let baseTotal = 0;
   const lines = [];
+  const percentLines = [];
 
   providerRates.forEach((rate) => {
     const sel = getSelection(state.provider, rate.key);
     if (!sel.include) return;
+
+    if (rate.type === 'percent') {
+      percentLines.push({ rate, sel });
+      return;
+    }
+
     const qty = rate.type === 'flat' ? 1 : (sel.qty || 0);
     const subtotal = qty * rate.amount;
-    total += subtotal;
+    baseTotal += subtotal;
     lines.push({
       label: rate.label,
       qty: rate.type === 'flat' ? 1 : qty,
@@ -324,7 +341,20 @@ function calculateTotal() {
       type: rate.type,
     });
   });
-  return { total, lines };
+
+  percentLines.forEach(({ rate }) => {
+    const subtotal = baseTotal * rate.amount;
+    lines.push({
+      label: rate.label,
+      qty: 1,
+      amount: rate.amount,
+      subtotal,
+      type: rate.type,
+    });
+    baseTotal += subtotal;
+  });
+
+  return { total: baseTotal, lines };
 }
 
 function renderSummary() {
@@ -340,7 +370,9 @@ function renderSummary() {
 
   lines.forEach((line) => {
     const row = createElement('div', { className: 'summary-line' });
-    const lhs = `${line.label} ${line.type === 'flat' ? '' : `× ${line.qty}`}`.trim();
+    const lhs = line.type === 'percent'
+      ? line.label
+      : `${line.label} ${line.type === 'flat' ? '' : `× ${line.qty}`}`.trim();
     row.append(
       createElement('span', { textContent: lhs }),
       createElement('strong', { textContent: formatCurrency(line.subtotal) }),
@@ -514,117 +546,6 @@ function wireJobForm() {
   });
 }
 
-function wireControls() {
-  document.querySelector('#resetRates').addEventListener('click', () => {
-    state.rates = cloneRates(defaultRates);
-    renderRateTable();
-    renderSummary();
-  });
-}
-
-function renderSnapshot() {
-  const container = document.querySelector('#snapshot');
-  if (!container) return;
-  container.innerHTML = '';
-  const active = state.jobs.length;
-  const delivered = state.jobs.filter((j) => j.status === 'Delivered').length;
-  const readyFleet = state.fleet.filter((f) => f.status === 'available').length;
-  const dispatched = state.fleet.filter((f) => f.status === 'dispatched').length;
-  const revenue = state.jobs.reduce((acc, job) => acc + (job.revenue?.total || 0), 0);
-
-  const cards = [
-    { label: 'Active jobs', value: active },
-    { label: 'Delivered today', value: delivered },
-    { label: 'Fleet ready', value: readyFleet },
-    { label: 'Out on calls', value: dispatched },
-    { label: 'Projected revenue', value: formatCurrency(revenue) },
-  ];
-
-  cards.forEach((card) => {
-    const item = createElement('div', { className: 'snapshot-item' });
-    item.append(
-      createElement('p', { className: 'muted', textContent: card.label }),
-      createElement('strong', { className: 'snapshot-value', textContent: card.value }),
-    );
-    container.appendChild(item);
-  });
-}
-
-function renderFleet() {
-  const container = document.querySelector('#fleet');
-  if (!container) return;
-  container.innerHTML = '';
-
-  state.fleet.forEach((truck) => {
-    const row = createElement('div', { className: 'fleet-row' });
-    const statusMap = {
-      available: 'Available',
-      dispatched: 'Dispatched',
-      on_scene: 'On scene',
-      in_yard: 'In yard',
-    };
-    row.append(
-      createElement('div', { className: 'fleet-id', textContent: `${truck.id} · ${truck.type}` }),
-      createElement('div', { textContent: truck.operator }),
-      createElement('div', { className: 'muted', textContent: truck.location }),
-      createElement('div', { className: 'status', textContent: statusMap[truck.status] || truck.status }),
-      createElement('div', { className: 'muted', textContent: truck.compliance.join(', ') }),
-    );
-    container.appendChild(row);
-  });
-}
-
-function renderJobs() {
-  const container = document.querySelector('#jobBoard');
-  if (!container) return;
-  container.innerHTML = '';
-  const logContainer = createElement('div', { className: 'activity-log' });
-  const activityTitle = createElement('div', { className: 'activity-title', textContent: 'Activity stream' });
-  logContainer.appendChild(activityTitle);
-
-  state.activity.forEach((entry) => {
-    const line = createElement('div', { className: 'activity-line' });
-    line.append(
-      createElement('span', { className: 'muted', textContent: entry.timestamp }),
-      createElement('span', { textContent: entry.entry }),
-    );
-    logContainer.appendChild(line);
-  });
-
-  document.querySelector('#attachToJob').addEventListener('click', attachChargesToJob);
-
-  document.querySelector('#logActivity').addEventListener('click', () => {
-    addActivity('Security check performed via Synaptics Systems stack');
-    renderJobs();
-  });
-
-  document.querySelector('#rotateRoster').addEventListener('click', () => {
-    state.fleet.unshift(state.fleet.pop());
-    renderFleet();
-  });
-
-  document.querySelector('#customItemForm').addEventListener('submit', (ev) => {
-    ev.preventDefault();
-    const data = Object.fromEntries(new FormData(form));
-    const job = {
-      id: data.id.trim(),
-      customer: data.customer.trim(),
-      location: data.location.trim(),
-      provider: data.provider,
-      eta: data.eta.trim(),
-      notes: data.notes.trim(),
-      status: 'Dispatched',
-      revenue: null,
-    };
-    state.jobs.unshift(job);
-    addActivity(`${job.id} created for ${job.customer}`);
-    form.reset();
-    persistState();
-    renderJobSelect();
-    renderSnapshot();
-    renderJobs();
-  });
-}
 
 function wireControls() {
   const resetRatesBtn = document.querySelector('#resetRates');
@@ -679,23 +600,17 @@ function wireControls() {
 
   const customItemForm = document.querySelector('#customItemForm');
   if (customItemForm) {
-    customItemForm.addEventListener('submit', (ev) => {
-      ev.preventDefault();
-      const form = ev.target;
-      const label = form.label.value.trim();
-      const amount = Number(form.amount.value) || 0;
-      const type = form.type.value;
-
-      if (!label) return;
-      const key = `${label.toLowerCase().replace(/[^a-z0-9]+/g, '_')}_${Date.now()}`;
-      const newItem = { key, label, amount, type };
-      state.rates[state.provider].push(newItem);
-      setSelection(state.provider, key, { include: true, qty: type === 'flat' ? 1 : 0 });
-      persistState();
-      form.reset();
-      renderRateTable();
-      renderSummary();
+    const lockedNote = createElement('p', {
+      className: 'muted locked-note',
+      textContent: 'Rates are locked to the approved sheet and cannot be edited or extended.',
     });
+    const wrapper = customItemForm.closest('.custom-add');
+    if (wrapper) {
+      wrapper.innerHTML = '';
+      wrapper.appendChild(lockedNote);
+    } else {
+      customItemForm.replaceWith(lockedNote);
+    }
   }
 }
 

@@ -222,6 +222,10 @@ input[type="number"], input[type="text"], select {
 }
 
 .rate-row .amount, .rate-row .qty { text-align: right; }
+.amount-display {
+  font-weight: 700;
+  text-align: right;
+}
 
 .summary-line { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--border); }
 .summary-line strong { font-weight: 700; }
@@ -234,6 +238,12 @@ input[type="number"], input[type="text"], select {
 .custom-add { margin-top: 12px; }
 .custom-form { display: grid; gap: 8px; margin-top: 8px; }
 .custom-form label { display: grid; gap: 4px; font-size: 14px; color: var(--muted); }
+.locked-note {
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+}
 
 @media (max-width: 720px) {
   .hero { grid-template-columns: 1fr; }

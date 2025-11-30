@@ -37,20 +37,8 @@
       <div class="rate-table" id="rateTable"></div>
 
       <details class="custom-add">
-        <summary>Add custom line item</summary>
-        <form id="customItemForm" class="custom-form">
-          <label>Label<input name="label" required placeholder="e.g. Traffic control" /></label>
-          <label>Amount<input name="amount" type="number" min="0" step="0.01" required value="0" /></label>
-          <label>Charge type
-            <select name="type">
-              <option value="flat">Flat fee</option>
-              <option value="per_km">Per km</option>
-              <option value="per_hour">Per hour</option>
-              <option value="per_unit">Per unit</option>
-            </select>
-          </label>
-          <button type="submit">Add line</button>
-        </form>
+        <summary>Rate sheet lock</summary>
+        <p class="muted locked-note">All rates follow the approved schedule and cannot be edited or extended with custom items.</p>
       </details>
     </section>
 
