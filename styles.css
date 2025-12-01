@@ -234,6 +234,14 @@ h1 { margin: 0; font-size: clamp(24px, 4vw, 34px); }
 .fleet-actions { color: var(--muted); font-weight: 700; }
 
 .two-col { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.three-col { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+
+.intake-card .custom-form {
+  margin: 0;
+  gap: 10px;
+}
+
+.intake-card button { width: fit-content; }
 
 .provider-select label { display: block; color: var(--muted); margin-bottom: 4px; }
 .provider-select select { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: #0b1220; color: var(--text); }

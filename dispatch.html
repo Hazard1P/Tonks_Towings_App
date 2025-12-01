@@ -20,6 +20,36 @@
   </header>
 
   <main class="page layout">
+    <section class="card intake-card">
+      <div class="card-header">
+        <div>
+          <h2>Rapid call intake</h2>
+          <p class="muted">Log a new call without leaving dispatch and route it to ticketing instantly.</p>
+        </div>
+        <div class="summary-actions">
+          <span class="pill muted-pill">One line entry</span>
+          <span class="pill">Syncs to invoicing</span>
+        </div>
+      </div>
+      <form class="custom-form three-col call-intake-form job-form">
+        <label>Customer<input name="customer" required placeholder="ICBC / retail" /></label>
+        <label>Location<input name="location" required placeholder="Highway 7 / 216th" /></label>
+        <label>ETA<input name="eta" required placeholder="14:25" /></label>
+        <label>Provider
+          <select name="provider" required></select>
+        </label>
+        <label>Notes<input name="notes" placeholder="Winch out, debris, etc." /></label>
+        <label>Status
+          <select name="status">
+            <option value="Awaiting dispatch">Awaiting dispatch</option>
+            <option value="Dispatched">Dispatched</option>
+            <option value="En route">En route</option>
+          </select>
+        </label>
+        <button type="submit">Create call</button>
+      </form>
+    </section>
+
     <section class="card">
       <div class="card-header">
         <div>
