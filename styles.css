@@ -209,6 +209,27 @@ h1 { margin: 0; font-size: clamp(24px, 4vw, 34px); }
 .invoice-controls { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
 .invoice-status { color: var(--muted); font-weight: 700; }
 
+.data-entry-card { background: linear-gradient(135deg, rgba(56, 189, 248, 0.06), rgba(14, 165, 233, 0.04)), var(--card); }
+.data-entry-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+.data-entry-block {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  display: grid;
+  gap: 8px;
+}
+.data-entry-block h3 { margin: 0; }
+.pill-list { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.data-entry-meta { display: grid; gap: 8px; }
+.data-stat { display: grid; gap: 4px; padding: 10px; border-radius: 10px; border: 1px dashed var(--border); }
+
+.input-hint { color: var(--muted); font-size: 12px; }
+
 .handoff-panel {
   border: 1px dashed var(--border);
   border-radius: 12px;

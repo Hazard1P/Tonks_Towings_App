@@ -20,6 +20,42 @@
   </header>
 
   <main class="page layout">
+    <section class="card data-entry-card">
+      <div class="card-header">
+        <div>
+          <h2>Data entry & sync</h2>
+          <p class="muted">Fleet and job data stay aligned across Dispatch, Ticketing, and Overview.</p>
+        </div>
+        <div class="status-pill secure-status" title="Synaptics Systems security posture">Synced locally</div>
+      </div>
+
+      <div class="data-entry-grid">
+        <div class="data-entry-block">
+          <h3>Dispatch input</h3>
+          <p class="muted">Short, descriptive placeholders keep call intake quick without sacrificing accuracy.</p>
+          <ul class="pill-list">
+            <li class="pill">Guided job IDs</li>
+            <li class="pill">Location clarity</li>
+            <li class="pill">Driver pairing ready</li>
+          </ul>
+        </div>
+        <div class="data-entry-block">
+          <h3>Storage targets</h3>
+          <p class="muted">Local, offline-friendly storage mirrors updates to every page without reloads.</p>
+          <div class="data-entry-meta"></div>
+        </div>
+        <div class="data-entry-block">
+          <h3>Fleet scaling</h3>
+          <p class="muted">Roster controls keep larger fleets manageable—rotate status, update drivers, and hand off to ticketing.</p>
+          <ul class="pill-list">
+            <li class="pill">Roster rotation</li>
+            <li class="pill">Compliance notes</li>
+            <li class="pill">Status quick-picks</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
     <section class="card">
       <div class="card-header">
         <div>
@@ -73,15 +109,16 @@
 
       <details class="custom-add">
         <summary>Add new job</summary>
-        <form class="job-form custom-form two-col">
-          <label>Job ID<input name="id" required placeholder="JOB-2081" /></label>
-          <label>Customer<input name="customer" required placeholder="ICBC / retail" /></label>
-          <label>Location<input name="location" required placeholder="Highway 1 / 232 exit" /></label>
+        <form id="jobForm" class="job-form custom-form two-col">
+          <label>Job ID<input name="id" required placeholder="JOB-2081" /><span class="input-hint">Unique code to keep dispatch, invoicing, and overview aligned.</span></label>
+          <label>Customer<input name="customer" required placeholder="ICBC / retail" /><span class="input-hint">Club, retail, or account name.</span></label>
+          <label>Location<input name="location" required placeholder="Highway 1 / 232 exit" /><span class="input-hint">Nearest landmark or cross-street.</span></label>
           <label>Provider
             <select name="provider" required></select>
+            <span class="input-hint">Matches the rate sheet used in ticketing.</span>
           </label>
-          <label>ETA<input name="eta" required placeholder="14:25" /></label>
-          <label>Notes<input name="notes" placeholder="Winch out, debris, etc." /></label>
+          <label>ETA<input name="eta" required placeholder="14:25" /><span class="input-hint">24h clock for quick status scans.</span></label>
+          <label>Notes<input name="notes" placeholder="Winch out, debris, etc." /><span class="input-hint">Optional context for the driver and invoice.</span></label>
           <button type="submit">Create job</button>
         </form>
       </details>
