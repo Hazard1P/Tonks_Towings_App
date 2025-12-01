@@ -20,6 +20,36 @@
   </header>
 
   <main class="layout page">
+    <section class="card intake-card">
+      <div class="card-header">
+        <div>
+          <h2>Rapid call intake</h2>
+          <p class="muted">Capture the essentials in one pass and hand the ticket straight to invoicing.</p>
+        </div>
+        <div class="summary-actions">
+          <span class="pill muted-pill">Fewer clicks</span>
+          <span class="pill">Auto-links to billing</span>
+        </div>
+      </div>
+      <form class="custom-form three-col call-intake-form job-form">
+        <label>Customer<input name="customer" required placeholder="BCAA / retail" /></label>
+        <label>Location<input name="location" required placeholder="Highway 1 / 232 exit" /></label>
+        <label>ETA<input name="eta" required placeholder="14:25" /></label>
+        <label>Provider
+          <select name="provider" required></select>
+        </label>
+        <label>Notes<input name="notes" placeholder="Winch out, debris, etc." /></label>
+        <label>Status
+          <select name="status">
+            <option value="Awaiting dispatch">Awaiting dispatch</option>
+            <option value="Dispatched">Dispatched</option>
+            <option value="En route">En route</option>
+          </select>
+        </label>
+        <button type="submit">Create call &amp; open in invoice</button>
+      </form>
+    </section>
+
     <section class="card">
       <div class="card-header">
         <h2>Configure ticket</h2>
@@ -72,11 +102,17 @@
       <div class="invoice-grid">
         <div class="invoice-job"></div>
         <div class="invoice-summary">
+          <div class="summary-actions">
+            <label class="job-link">
+              Invoice job
+              <select class="job-select invoice-job-select"></select>
+            </label>
+            <button class="attach-to-job" type="button">Attach ticket</button>
+          </div>
           <h3>Invoice summary</h3>
           <div class="summary-panel"></div>
           <div class="invoice-controls">
             <button class="recalculate" type="button">Recalculate now</button>
-            <button class="attach-to-job" type="button">Apply charges</button>
             <button class="mark-invoiced" type="button" aria-label="Mark invoice as issued">Mark invoiced</button>
             <button class="mark-paid" type="button" aria-label="Mark invoice as paid">Mark paid</button>
           </div>

@@ -92,6 +92,11 @@ const state = {
   activity: [],
 };
 
+function generateJobId() {
+  const timestamp = Date.now().toString().slice(-5);
+  return `JOB-${timestamp}`;
+}
+
 const baseFleet = [
   {
     id: 'TRK-21',
@@ -326,6 +331,16 @@ function createElement(tag, options = {}) {
   return el;
 }
 
+function populateProviderSelect(select) {
+  if (!select) return;
+  select.innerHTML = '';
+  Object.keys(state.rates).forEach((provider) => {
+    const opt = createElement('option', { value: provider, textContent: provider });
+    if (provider === state.provider) opt.selected = true;
+    select.appendChild(opt);
+  });
+}
+
 function formatCurrency(value) {
   if (Number.isNaN(value)) return '$0.00';
   return value.toLocaleString('en-CA', { style: 'currency', currency: 'CAD' });
@@ -364,6 +379,7 @@ function renderProviderOptions() {
     persistState();
     renderRateTable();
     renderSummary();
+    document.querySelectorAll('.call-intake-form select[name="provider"]').forEach(populateProviderSelect);
   });
 }
 
@@ -524,6 +540,7 @@ function renderJobSelect() {
     select.appendChild(placeholder);
     state.jobs.forEach((job) => {
       const opt = createElement('option', { value: job.id, textContent: `${job.id} · ${job.customer}` });
+      if (state.invoiceJobId === job.id) opt.selected = true;
       select.appendChild(opt);
     });
   });
@@ -746,6 +763,84 @@ function renderJobs() {
   });
 }
 
+function getInvoiceJob() {
+  if (!state.jobs.length) return null;
+  if (state.invoiceJobId) {
+    const match = state.jobs.find((job) => job.id === state.invoiceJobId);
+    if (match) return match;
+  }
+  state.invoiceJobId = state.jobs[0].id;
+  return state.jobs[0];
+}
+
+function renderInvoice() {
+  const jobContainer = document.querySelector('.invoice-job');
+  const summaryContainer = document.querySelector('.invoice-summary .summary-panel');
+  if (!jobContainer || !summaryContainer) return;
+
+  const job = getInvoiceJob();
+  document.querySelectorAll('.invoice-job-select').forEach((select) => {
+    if (!select.value && job?.id) select.value = job.id;
+  });
+
+  jobContainer.innerHTML = '';
+  summaryContainer.innerHTML = '';
+
+  if (!job) {
+    jobContainer.textContent = 'No calls are on file yet. Use the intake strip to add a job.';
+    summaryContainer.textContent = 'Select or create a call to attach ticket charges.';
+    return;
+  }
+
+  const title = createElement('div', { className: 'invoice-title' });
+  title.append(
+    createElement('strong', { textContent: `${job.id} · ${job.customer}` }),
+    createElement('div', { className: 'muted', textContent: job.location }),
+  );
+
+  const meta = createElement('div', { className: 'meta' });
+  meta.append(
+    createElement('div', { textContent: `Provider: ${job.provider}` }),
+    createElement('div', { textContent: `ETA: ${job.eta}` }),
+    createElement('div', { textContent: job.notes || 'No notes added' }),
+  );
+
+  const tags = createElement('div', { className: 'invoice-tags' });
+  tags.append(
+    createElement('span', { className: 'badge', textContent: job.status }),
+    createElement('span', { className: 'badge', textContent: job.invoiceStatus || 'Draft' }),
+  );
+  if (job.assignedDriver) {
+    tags.append(createElement('span', { className: 'badge', textContent: `Driver: ${job.assignedDriver}` }));
+  }
+
+  jobContainer.append(title, meta, tags);
+
+  const revenue = job.revenue;
+  if (!revenue || !revenue.lines?.length) {
+    const empty = createElement('p', {
+      className: 'muted',
+      textContent: 'No charges attached. Use the ticket builder then press "Attach ticket" to sync totals.',
+    });
+    summaryContainer.appendChild(empty);
+    return;
+  }
+
+  revenue.lines.forEach((line) => {
+    const row = createElement('div', { className: 'summary-line' });
+    const left = line.type === 'flat' ? line.label : `${line.label} × ${line.qty}`;
+    row.append(
+      createElement('span', { textContent: left }),
+      createElement('strong', { textContent: formatCurrency(line.subtotal) }),
+    );
+    summaryContainer.appendChild(row);
+  });
+
+  const totalRow = createElement('div', { className: 'total' });
+  totalRow.textContent = `Total: ${formatCurrency(revenue.total || 0)}`;
+  summaryContainer.appendChild(totalRow);
+}
+
 function advanceJob(jobId) {
   const job = state.jobs.find((j) => j.id === jobId);
   if (!job) return;
@@ -794,12 +889,38 @@ function updateInvoiceStatus(status) {
 }
 
 function wireJobForm() {
-  const form = document.querySelector('#jobForm');
-  if (!form) return;
-  const providerSelect = form.provider;
-  Object.keys(state.rates).forEach((provider) => {
-    const opt = createElement('option', { value: provider, textContent: provider });
-    providerSelect.appendChild(opt);
+  const forms = document.querySelectorAll('.job-form');
+  if (!forms.length) return;
+
+  forms.forEach((form) => {
+    populateProviderSelect(form.querySelector('select[name="provider"]'));
+    form.addEventListener('submit', (ev) => {
+      ev.preventDefault();
+      const data = Object.fromEntries(new FormData(form));
+      const job = {
+        id: (data.id || generateJobId()).trim(),
+        customer: (data.customer || 'Retail').trim(),
+        location: (data.location || '').trim(),
+        provider: data.provider || state.provider,
+        eta: (data.eta || '').trim(),
+        notes: (data.notes || '').trim(),
+        status: data.status || 'Awaiting dispatch',
+        assignedDriver: null,
+        revenue: null,
+        invoiceStatus: 'Draft',
+      };
+      state.jobs.unshift(job);
+      state.invoiceJobId = job.id;
+      addActivity(`${job.id} created for ${job.customer}`);
+      persistState();
+      renderJobSelect();
+      renderJobs();
+      renderDispatchTasks();
+      renderSnapshot();
+      renderWorkflowBoard();
+      renderInvoice();
+      form.reset();
+    });
   });
 }
 
@@ -901,6 +1022,20 @@ function wireControls() {
       attachChargesToJob(select);
     });
   });
+
+  const invoiceSelects = document.querySelectorAll('.invoice-job-select');
+  invoiceSelects.forEach((select) => {
+    select.addEventListener('change', (ev) => {
+      state.invoiceJobId = ev.target.value;
+      renderInvoice();
+      renderJobSelect();
+    });
+  });
+
+  const markIssuedButtons = document.querySelectorAll('.mark-invoiced');
+  markIssuedButtons.forEach((btn) => btn.addEventListener('click', () => updateInvoiceStatus('Invoiced')));
+  const markPaidButtons = document.querySelectorAll('.mark-paid');
+  markPaidButtons.forEach((btn) => btn.addEventListener('click', () => updateInvoiceStatus('Paid')));
 
   const logButtons = document.querySelectorAll('.log-activity');
   logButtons.forEach((button) => {
