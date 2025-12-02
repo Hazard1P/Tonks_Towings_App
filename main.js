@@ -58,7 +58,11 @@ const state = {
   fleet: clone(baseFleet),
   charges: {},
   ledger: [],
+  gmail: { clientId: '', query: 'subject:(tow OR dispatch) newer_than:7d', lastPreview: '' },
 };
+
+let gmailTokenClient;
+let gmailAccessToken;
 
 function clone(obj) {
   return JSON.parse(JSON.stringify(obj));
@@ -98,6 +102,157 @@ function setupSelectOptions(select, options) {
     option.value = value;
     option.textContent = value;
     select.append(option);
+  });
+}
+
+function updateGmailInputs() {
+  const clientInput = document.getElementById('gmailClientId');
+  const queryInput = document.getElementById('gmailQuery');
+  if (!clientInput || !queryInput) return;
+  clientInput.value = state.gmail.clientId;
+  queryInput.value = state.gmail.query;
+}
+
+function setGmailStatus(message, type = 'info', details = '') {
+  const status = document.getElementById('gmailStatus');
+  if (!status) return;
+  const classes = ['status-block'];
+  if (type === 'success') classes.push('success');
+  if (type === 'error') classes.push('error');
+  status.className = classes.join(' ');
+  status.innerHTML = `<strong>${message}</strong>${details ? `<small>${details}</small>` : ''}`;
+  if (state.gmail.lastPreview) {
+    const preview = document.createElement('small');
+    preview.textContent = state.gmail.lastPreview;
+    status.append(preview);
+  }
+}
+
+function connectGmail() {
+  const clientId = document.getElementById('gmailClientId').value.trim();
+  const query = document.getElementById('gmailQuery').value.trim();
+  if (!clientId) {
+    setGmailStatus('Add a Google OAuth client ID to connect.', 'error');
+    return;
+  }
+  state.gmail.clientId = clientId;
+  state.gmail.query = query || state.gmail.query;
+  persistState();
+
+  if (!window.google?.accounts?.oauth2) {
+    setGmailStatus('Google Identity Services is still loading. Try again in a moment.', 'error');
+    return;
+  }
+
+  gmailTokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: clientId,
+    scope: 'https://www.googleapis.com/auth/gmail.readonly',
+    callback: (tokenResponse) => {
+      gmailAccessToken = tokenResponse.access_token;
+      setGmailStatus('Gmail connected. You can fetch the latest dispatch email.', 'success');
+      logEvent('gmail_connected');
+    },
+  });
+
+  gmailTokenClient.requestAccessToken({ prompt: 'consent' });
+}
+
+async function fetchLatestGmail() {
+  if (!gmailAccessToken) {
+    setGmailStatus('Connect Gmail first, then pull a dispatch email.', 'error');
+    return;
+  }
+  const query = document.getElementById('gmailQuery').value.trim() || state.gmail.query;
+  state.gmail.query = query;
+  persistState();
+  try {
+    setGmailStatus('Looking for the latest matching email...');
+    const listRes = await fetch(
+      `https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=1&q=${encodeURIComponent(query)}`,
+      { headers: { Authorization: `Bearer ${gmailAccessToken}` } }
+    );
+    if (!listRes.ok) throw new Error('Unable to reach Gmail. Check scopes and account access.');
+    const list = await listRes.json();
+    if (!list.messages?.length) {
+      setGmailStatus('No emails matched that query.', 'error');
+      return;
+    }
+    const messageId = list.messages[0].id;
+    const messageRes = await fetch(
+      `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}?format=full`,
+      { headers: { Authorization: `Bearer ${gmailAccessToken}` } }
+    );
+    if (!messageRes.ok) throw new Error('Failed to download the email body.');
+    const message = await messageRes.json();
+    const body = extractPlainText(message.payload);
+    const parsed = parseCallEmail(body);
+    state.gmail.lastPreview = parsed.preview;
+    persistState();
+    fillJobForm(parsed.fields);
+    setGmailStatus('Call details loaded from Gmail and prefilled.', 'success', parsed.preview);
+    logEvent('gmail_call_imported', { messageId, query });
+  } catch (err) {
+    console.error(err);
+    setGmailStatus(err.message || 'Gmail lookup failed.', 'error');
+    logEvent('gmail_error', { message: err.message });
+  }
+}
+
+function extractPlainText(payload) {
+  if (!payload) return '';
+  if (payload.parts) {
+    const textPart = payload.parts.find((p) => p.mimeType === 'text/plain') || payload.parts[0];
+    if (textPart?.body?.data) return decodeBase64Url(textPart.body.data);
+    return extractPlainText(textPart);
+  }
+  if (payload.body?.data) return decodeBase64Url(payload.body.data);
+  return '';
+}
+
+function decodeBase64Url(input) {
+  const normalized = input.replace(/-/g, '+').replace(/_/g, '/');
+  const decoded = atob(normalized);
+  try {
+    return decodeURIComponent(escape(decoded));
+  } catch (e) {
+    return decoded;
+  }
+}
+
+function parseCallEmail(text) {
+  const clean = text.replace(/\r/g, '');
+  const find = (label) => {
+    const match = new RegExp(`${label}:\s*(.+)`, 'i').exec(clean);
+    return match ? match[1].trim() : '';
+  };
+
+  const idMatch = clean.match(/(JOB[-\s]?\d{3,5}|Call ID[:\s]*([A-Za-z0-9-]+))/i);
+  const etaMatch = clean.match(/ETA[:\s]*([0-2]?\d[:\.][0-5]\d)/i);
+  const driverMatch = clean.match(/Driver[:\s]*([A-Za-z0-9- ]+)/i);
+
+  const fallbackId = `JOB-${Date.now().toString().slice(-4)}`;
+  const fields = {
+    id: (idMatch?.[2] || idMatch?.[1] || '').replace(/\s+/g, '').toUpperCase() || fallbackId,
+    customer: find('Customer') || find('Member') || 'Retail',
+    location: find('Location') || find('Address') || '',
+    provider: find('Program') || find('Provider') || state.provider,
+    driver: (driverMatch?.[1] || '').trim(),
+    eta: etaMatch?.[1]?.replace('.', ':') || '',
+    notes: find('Notes') || find('Details') || clean.split('\n')[0].slice(0, 120),
+  };
+
+  const preview = `ID ${fields.id || '—'} · ${fields.customer || '—'} · ${fields.location || '—'}`;
+  return { fields, preview };
+}
+
+function fillJobForm(fields) {
+  const form = document.getElementById('jobForm');
+  if (!form) return;
+  const patchable = ['id', 'customer', 'location', 'provider', 'driver', 'eta', 'notes'];
+  patchable.forEach((key) => {
+    if (!fields[key]) return;
+    const input = form.elements.namedItem(key);
+    if (input) input.value = fields[key];
   });
 }
 
@@ -374,6 +529,7 @@ function resetData() {
   state.fleet = clone(baseFleet);
   state.charges = {};
   state.ledger = [];
+  state.gmail = { clientId: '', query: 'subject:(tow OR dispatch) newer_than:7d', lastPreview: '' };
   persistState();
   initialize();
   logEvent('workspace_reset');
@@ -389,6 +545,8 @@ function initialize() {
   providerSelect.value = state.provider;
   rateProvider.value = state.provider;
   setupSelectOptions(document.querySelector('select[name="driver"]'), ['Unassigned', ...state.fleet.map((f) => f.id)]);
+  updateGmailInputs();
+  setGmailStatus('Connect Gmail to auto-fill new calls.');
   renderRateTable();
   renderTotals();
   renderJobs();
@@ -410,6 +568,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('exportJobCsv').addEventListener('click', exportJobCsv);
   document.getElementById('downloadLedger').addEventListener('click', exportLedgerCsv);
   document.getElementById('refreshLedger').addEventListener('click', renderLedger);
+  document.getElementById('connectGmail').addEventListener('click', connectGmail);
+  document.getElementById('fetchGmail').addEventListener('click', fetchLatestGmail);
   document.getElementById('saveAll').addEventListener('click', () => {
     persistState();
     logEvent('manual_save');

@@ -47,12 +47,25 @@
           <button type="submit">Add call</button>
         </form>
       </div>
-      <div class="mini-card">
-        <h3>Ledger</h3>
-        <p class="muted">Every action is written to a local log for audit and CSV export.</p>
-        <div id="ledgerStats"></div>
-        <button class="secondary" id="refreshLedger" type="button">Refresh log</button>
-        <button class="secondary" id="downloadLedger" type="button">Download ledger CSV</button>
+      <div class="mini-stack">
+        <div class="mini-card">
+          <h3>Ledger</h3>
+          <p class="muted">Every action is written to a local log for audit and CSV export.</p>
+          <div id="ledgerStats"></div>
+          <button class="secondary" id="refreshLedger" type="button">Refresh log</button>
+          <button class="secondary" id="downloadLedger" type="button">Download ledger CSV</button>
+        </div>
+        <div class="mini-card">
+          <h3>Gmail intake</h3>
+          <p class="muted">Connect to a Google inbox, pull the latest dispatch email, and prefill the call form.</p>
+          <label>Google Client ID<input id="gmailClientId" placeholder="123456.apps.googleusercontent.com" /></label>
+          <label>Search query<input id="gmailQuery" placeholder="subject:(tow OR dispatch) newer_than:7d" /></label>
+          <div class="inline-actions">
+            <button class="secondary" id="connectGmail" type="button">Connect Gmail</button>
+            <button class="secondary" id="fetchGmail" type="button">Fetch latest email</button>
+          </div>
+          <div id="gmailStatus" class="status-block"></div>
+        </div>
       </div>
     </section>
 
@@ -140,6 +153,7 @@
   </main>
 
   <footer class="footer">Simple, auditable fleet management — dispatch, calculate, invoice.</footer>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="main.js"></script>
 </body>
 </html>
