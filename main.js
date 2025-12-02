@@ -95,6 +95,12 @@ const state = {
   lastSavedAt: null,
 };
 
+const DB_NAME = 'tonks_towing_ledger';
+const DB_VERSION = 1;
+const DB_STORE = 'events';
+let dbPromise = null;
+const databaseStatus = { connected: false, count: 0, lastEntry: null, error: null };
+
 const baseFleet = [
   {
     id: 'TRK-21',
@@ -175,6 +181,73 @@ const baseJobs = [
 
 function cloneRates(rates) {
   return JSON.parse(JSON.stringify(rates));
+}
+
+function openDatabase() {
+  if (dbPromise) return dbPromise;
+
+  dbPromise = new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains(DB_STORE)) {
+        db.createObjectStore(DB_STORE, { keyPath: 'id', autoIncrement: true });
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+
+  return dbPromise;
+}
+
+async function recordDbEvent(eventName, payload = {}) {
+  try {
+    const db = await openDatabase();
+    const tx = db.transaction(DB_STORE, 'readwrite');
+    const store = tx.objectStore(DB_STORE);
+    store.add({ event: eventName, payload, createdAt: new Date().toISOString() });
+  } catch (err) {
+    databaseStatus.error = err?.message || 'Unable to write to database';
+  }
+}
+
+function countStore(db) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(DB_STORE, 'readonly');
+    const store = tx.objectStore(DB_STORE);
+    const req = store.count();
+    req.onsuccess = () => resolve(req.result || 0);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function getLatestEvent(db) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(DB_STORE, 'readonly');
+    const store = tx.objectStore(DB_STORE);
+    const cursor = store.openCursor(null, 'prev');
+    cursor.onsuccess = () => {
+      resolve(cursor.result?.value || null);
+    };
+    cursor.onerror = () => reject(cursor.error);
+  });
+}
+
+async function refreshDatabaseStats() {
+  try {
+    const db = await openDatabase();
+    const [count, latest] = await Promise.all([countStore(db), getLatestEvent(db)]);
+    databaseStatus.connected = true;
+    databaseStatus.count = count;
+    databaseStatus.lastEntry = latest?.createdAt || null;
+    databaseStatus.error = null;
+  } catch (err) {
+    databaseStatus.connected = false;
+    databaseStatus.error = err?.message || 'Database unavailable';
+  }
+  renderDataEntryMeta();
+  renderDatabasePanel();
 }
 
 
@@ -346,6 +419,14 @@ function formatTimestamp(timestamp) {
   return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 }
 
+function escapeCsv(value) {
+  const stringValue = value === null || value === undefined ? '' : String(value);
+  if (/[",\n]/.test(stringValue)) {
+    return `"${stringValue.replace(/"/g, '""')}"`;
+  }
+  return stringValue;
+}
+
 function getSelection(provider, key) {
   const providerSel = state.selection[provider] || {};
   return providerSel[key] || { include: false, qty: 0, amount: null };
@@ -362,6 +443,8 @@ function addActivity(entry) {
   const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   state.activity.unshift({ entry, timestamp });
   if (state.activity.length > 25) state.activity.pop();
+  recordDbEvent('activity', { entry, timestamp });
+  refreshDatabaseStats();
   persistState();
 }
 
@@ -689,6 +772,13 @@ function renderDataEntryMeta() {
     container.innerHTML = '';
 
     const storageSizeKb = Math.round((JSON.stringify(state).length / 1024) * 10) / 10;
+    const dbLabel = databaseStatus.connected ? 'Ledger online' : 'Ledger offline';
+    const dbValue = databaseStatus.connected
+      ? `${databaseStatus.count} events`
+      : databaseStatus.error || 'Unavailable';
+    const dbTag = databaseStatus.lastEntry
+      ? `Last: ${formatTimestamp(databaseStatus.lastEntry)}`
+      : 'Awaiting entries';
     const rows = [
       {
         label: 'Last synced',
@@ -705,6 +795,11 @@ function renderDataEntryMeta() {
         value: `${storageSizeKb} KB cached`,
         tag: 'Ready for offline',
       },
+      {
+        label: dbLabel,
+        value: dbValue,
+        tag: dbTag,
+      },
     ];
 
     rows.forEach((row) => {
@@ -716,6 +811,64 @@ function renderDataEntryMeta() {
       );
       container.appendChild(stat);
     });
+  });
+}
+
+function renderDatabasePanel() {
+  const panels = document.querySelectorAll('.database-panel');
+  const pills = document.querySelectorAll('.ledger-status');
+
+  pills.forEach((pill) => {
+    pill.textContent = databaseStatus.connected ? 'Database ready' : 'Database offline';
+    pill.title = databaseStatus.error || 'IndexedDB ledger';
+  });
+
+  panels.forEach((panel) => {
+    panel.innerHTML = '';
+    const statusRow = createElement('div', { className: 'database-row' });
+    const statusText = createElement('div');
+    statusText.append(
+      createElement('strong', {
+        textContent: databaseStatus.connected ? 'Local ledger secured' : 'Ledger unavailable',
+      }),
+      createElement('p', {
+        className: 'database-meta',
+        textContent: databaseStatus.connected
+          ? 'Events are mirrored into IndexedDB for resilience.'
+          : databaseStatus.error || 'Browser storage permissions may be blocked.',
+      }),
+    );
+    statusRow.append(
+      statusText,
+      createElement('span', {
+        className: 'badge-soft',
+        textContent: databaseStatus.connected ? 'Encrypted on device' : 'Check permissions',
+      }),
+    );
+
+    const countsRow = createElement('div', { className: 'database-row' });
+    countsRow.append(
+      createElement('div', {
+        innerHTML: `<strong>${databaseStatus.count} events</strong><p class="database-meta">Audit trail stored with timestamped activity.</p>`,
+      }),
+      createElement('span', {
+        className: 'badge',
+        textContent: databaseStatus.lastEntry ? `Last at ${formatTimestamp(databaseStatus.lastEntry)}` : 'Awaiting first entry',
+      }),
+    );
+
+    const syncRow = createElement('div', { className: 'database-row' });
+    syncRow.append(
+      createElement('div', {
+        innerHTML: `<strong>Exports</strong><p class="database-meta">Use CSV downloads to share costs, prices, and job details.</p>`,
+      }),
+      createElement('span', {
+        className: 'badge-soft',
+        textContent: 'CSV + database in sync',
+      }),
+    );
+
+    panel.append(statusRow, countsRow, syncRow);
   });
 }
 
@@ -913,6 +1066,50 @@ function updateInvoiceStatus(status) {
   renderSnapshot();
 }
 
+function exportCurrentJobCSV() {
+  const job = getInvoiceJob();
+  if (!job) return;
+
+  const revenue = job.revenue || calculateTotal();
+  const lines = revenue.lines?.length
+    ? revenue.lines
+    : [{ label: 'No charges attached', qty: 0, amount: 0, subtotal: 0, type: 'flat' }];
+
+  const rows = [
+    ['Job ID', job.id],
+    ['Customer', job.customer],
+    ['Provider', job.provider],
+    ['Location', job.location],
+    ['ETA', job.eta],
+    ['Notes', job.notes || ''],
+    ['Assigned driver', job.assignedDriver || 'Unassigned'],
+    ['Invoice status', job.invoiceStatus || 'Draft'],
+    [],
+    ['Line item', 'Qty', 'Unit price', 'Subtotal'],
+    ...lines.map((line) => [
+      line.label,
+      line.qty ?? 1,
+      line.type === 'percent'
+        ? `${Math.round((line.amount || 0) * 10000) / 100}%`
+        : formatCurrency(line.amount || 0),
+      formatCurrency(line.subtotal || 0),
+    ]),
+    ['Total', '', '', formatCurrency(revenue.total || 0)],
+  ];
+
+  const csv = rows.map((row) => row.map(escapeCsv).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = `${job.id || 'job'}-ledger.csv`;
+  anchor.click();
+  URL.revokeObjectURL(url);
+
+  addActivity(`${job.id} exported to CSV ledger`);
+  recordDbEvent('csv_export', { jobId: job.id, total: revenue.total || 0, lines: lines.length });
+}
+
 function wireJobForm() {
   const form = document.querySelector('#jobForm');
   if (!form) return;
@@ -1072,6 +1269,16 @@ function wireControls() {
     });
   });
 
+  const exportButtons = document.querySelectorAll('.export-csv');
+  exportButtons.forEach((btn) => {
+    btn.addEventListener('click', exportCurrentJobCSV);
+  });
+
+  const ledgerRefreshButtons = document.querySelectorAll('.sync-ledger');
+  ledgerRefreshButtons.forEach((btn) => {
+    btn.addEventListener('click', () => refreshDatabaseStats());
+  });
+
   const customItemForm = document.querySelector('#customItemForm');
   if (customItemForm) {
     const lockedNote = createElement('p', {
@@ -1126,6 +1333,8 @@ function init() {
   wireJobForm();
   renderWorkflowBoard();
   wireFleetForm();
+  renderDatabasePanel();
+  refreshDatabaseStats();
   wireControls();
 }
 
