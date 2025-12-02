@@ -140,6 +140,7 @@
           <div class="invoice-controls">
             <button class="recalculate" type="button">Recalculate now</button>
             <button class="attach-to-job" type="button">Apply charges</button>
+            <button class="export-csv" type="button">Download job CSV</button>
             <button class="mark-invoiced" type="button" aria-label="Mark invoice as issued">Mark invoiced</button>
             <button class="mark-paid" type="button" aria-label="Mark invoice as paid">Mark paid</button>
           </div>
@@ -163,6 +164,21 @@
           <button type="submit">Create job</button>
         </form>
       </details>
+    </section>
+
+    <section class="card ledger-card">
+      <div class="card-header">
+        <div>
+          <h2>Ledger + audit trail</h2>
+          <p class="muted">CSV downloads and a local database keep billing, dispatch, and audits aligned.</p>
+        </div>
+        <div class="status-pill ledger-status" title="Local database health">Database linking</div>
+      </div>
+      <div class="database-panel"></div>
+      <div class="ledger-actions">
+        <button class="export-csv" type="button">Download active job CSV</button>
+        <button class="sync-ledger" type="button" aria-label="Refresh database stats">Refresh ledger</button>
+      </div>
     </section>
 
     <section class="card">
