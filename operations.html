@@ -56,26 +56,53 @@
       </div>
     </section>
 
-    <section class="card">
+    <section class="card configure-card">
       <div class="card-header">
-        <h2>Configure ticket</h2>
+        <div>
+          <h2>Configure ticket</h2>
+          <p class="muted">Condensed layout with quick filters so the rate sheet stays tidy alongside the rest of the page.</p>
+          <div class="pill-row">
+            <span class="pill">Compact view</span>
+            <span class="pill muted-pill">Scroll-friendly</span>
+            <span class="pill muted-pill">Filterable</span>
+          </div>
+        </div>
         <div class="provider-select">
           <label for="provider">Provider</label>
           <select id="provider"></select>
         </div>
       </div>
 
-      <div class="controls">
-        <button id="resetRates" type="button">Reset rates to sheet defaults</button>
-        <button id="clearSelection" type="button">Clear all selections</button>
+      <div class="configure-grid">
+        <div class="configure-sidebar">
+          <div class="rate-meta" id="rateMeta"></div>
+
+          <label class="search-label">Find a line item
+            <input id="rateSearch" type="search" placeholder="Search rate names" />
+          </label>
+
+          <label class="toggle-row">
+            <input id="filterSelected" type="checkbox" />
+            <span>Show selected only</span>
+          </label>
+
+          <div class="controls">
+            <button id="resetRates" type="button">Reset rates to sheet defaults</button>
+            <button id="clearSelection" type="button">Clear all selections</button>
+          </div>
+
+          <p class="muted compact-hint">Filters and scroll keep the ticket configurator from overwhelming the rest of the workspace.</p>
+        </div>
+
+        <div class="rate-table-shell">
+          <div class="rate-table" id="rateTable"></div>
+          <p class="muted compact-hint">Scroll to browse the full sheet; headers stay pinned for quick reference.</p>
+          <details class="custom-add">
+            <summary>Rate sheet lock</summary>
+            <p class="muted locked-note">All rates follow the approved schedule and cannot be edited or extended with custom items.</p>
+          </details>
+        </div>
       </div>
-
-      <div class="rate-table" id="rateTable"></div>
-
-      <details class="custom-add">
-        <summary>Rate sheet lock</summary>
-        <p class="muted locked-note">All rates follow the approved schedule and cannot be edited or extended with custom items.</p>
-      </details>
     </section>
 
     <section class="card invoice-card">

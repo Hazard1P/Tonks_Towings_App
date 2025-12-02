@@ -86,6 +86,8 @@ const state = {
   provider: 'BCAA',
   rates: cloneRates(defaultRates),
   selection: {},
+  rateFilter: '',
+  showSelectedOnly: false,
   invoiceJobId: null,
   fleet: [],
   jobs: [],
@@ -311,6 +313,8 @@ function persistState() {
       provider: state.provider,
       rates: state.rates,
       selection: state.selection,
+      rateFilter: state.rateFilter,
+      showSelectedOnly: state.showSelectedOnly,
       invoiceJobId: state.invoiceJobId,
       fleet: state.fleet,
       jobs: state.jobs,
@@ -383,6 +387,10 @@ function renderRateTable() {
   if (!container) return;
   container.innerHTML = '';
 
+  const query = (state.rateFilter || '').toLowerCase();
+  const showSelectedOnly = Boolean(state.showSelectedOnly);
+  const statsEl = document.querySelector('#rateMeta');
+
   const header = createElement('div', { className: 'rate-row' });
   header.innerHTML = `
     <header>Line item</header>
@@ -392,10 +400,20 @@ function renderRateTable() {
   `;
   container.appendChild(header);
 
+  let visibleCount = 0;
+  let selectedCount = 0;
+
   (state.rates[state.provider] || []).forEach((rate) => {
     const row = createElement('div', { className: 'rate-row' });
-
     const title = createElement('div', { textContent: rate.label });
+
+    const selection = getSelection(state.provider, rate.key);
+    const matchesQuery = !query || rate.label.toLowerCase().includes(query);
+    const matchesSelected = !showSelectedOnly || selection.include;
+    if (!matchesQuery || !matchesSelected) return;
+
+    visibleCount += 1;
+    if (selection.include) selectedCount += 1;
 
     const amountDisplay = createElement('div', {
       className: 'amount-display',
@@ -404,7 +422,6 @@ function renderRateTable() {
         : formatCurrency(rate.amount),
     });
 
-    const selection = getSelection(state.provider, rate.key);
     const qtyInput = createElement('input', {
       type: 'number',
       min: '0',
@@ -454,6 +471,19 @@ function renderRateTable() {
     row.append(title, amountCell, qtyInput, includeToggle);
     container.appendChild(row);
   });
+
+  if (visibleCount === 0) {
+    const empty = createElement('div', { className: 'rate-row' });
+    empty.style.gridTemplateColumns = '1fr';
+    empty.textContent = 'No rate lines match your filters. Clear the search or toggle to see all options.';
+    container.appendChild(empty);
+  }
+
+  if (statsEl) {
+    const visibleText = visibleCount ? `${visibleCount} line items shown` : 'No lines visible';
+    const selectedText = `${selectedCount} selected`;
+    statsEl.textContent = `${visibleText} • ${selectedText}`;
+  }
 }
 
 function calculateTotal() {
@@ -972,6 +1002,26 @@ function wireControls() {
     });
   }
 
+  const rateSearch = document.querySelector('#rateSearch');
+  if (rateSearch) {
+    rateSearch.value = state.rateFilter;
+    rateSearch.addEventListener('input', () => {
+      state.rateFilter = rateSearch.value;
+      renderRateTable();
+      persistState();
+    });
+  }
+
+  const selectedToggle = document.querySelector('#filterSelected');
+  if (selectedToggle) {
+    selectedToggle.checked = state.showSelectedOnly;
+    selectedToggle.addEventListener('change', () => {
+      state.showSelectedOnly = selectedToggle.checked;
+      renderRateTable();
+      persistState();
+    });
+  }
+
   const recalcBtns = document.querySelectorAll('.recalculate');
   recalcBtns.forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -1040,6 +1090,8 @@ function hydrateState() {
     state.provider = stored.provider || state.provider;
     state.rates = stored.rates || state.rates;
     state.selection = stored.selection || state.selection;
+    state.rateFilter = stored.rateFilter || state.rateFilter;
+    state.showSelectedOnly = stored.showSelectedOnly || state.showSelectedOnly;
     state.invoiceJobId = stored.invoiceJobId || state.invoiceJobId;
     state.fleet = stored.fleet || cloneRates({ baseFleet }).baseFleet || baseFleet;
     state.jobs = stored.jobs || cloneRates({ baseJobs }).baseJobs || baseJobs;

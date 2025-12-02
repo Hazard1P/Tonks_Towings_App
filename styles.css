@@ -228,6 +228,30 @@ h1 { margin: 0; font-size: clamp(24px, 4vw, 34px); }
 .data-entry-meta { display: grid; gap: 8px; }
 .data-stat { display: grid; gap: 4px; padding: 10px; border-radius: 10px; border: 1px dashed var(--border); }
 
+.configure-card { display: grid; gap: 14px; }
+.configure-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 320px) 1fr;
+  gap: 14px;
+}
+
+.configure-sidebar {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.pill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.rate-meta { font-weight: 700; color: var(--accent); }
+.search-label { display: grid; gap: 6px; color: var(--muted); font-size: 14px; }
+.toggle-row { display: flex; gap: 8px; align-items: center; color: var(--text); font-weight: 700; }
+.compact-hint { font-size: 12px; }
+.rate-table-shell { display: grid; gap: 8px; }
+
 .input-hint { color: var(--muted); font-size: 12px; }
 
 .handoff-panel {
@@ -260,6 +284,7 @@ h1 { margin: 0; font-size: clamp(24px, 4vw, 34px); }
 .provider-select select { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid var(--border); background: #0b1220; color: var(--text); }
 
 .controls { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.configure-sidebar .controls { flex-direction: column; }
 button {
   background: var(--accent);
   color: #0b1220;
@@ -277,7 +302,10 @@ button.secondary { background: transparent; color: var(--text); border: 1px soli
 .rate-table {
   border: 1px solid var(--border);
   border-radius: 12px;
-  overflow: hidden;
+  overflow: auto;
+  max-height: 520px;
+  background: rgba(0, 0, 0, 0.25);
+  scroll-behavior: smooth;
 }
 
 .rate-row {
@@ -291,6 +319,13 @@ button.secondary { background: transparent; color: var(--text); border: 1px soli
 }
 
 .rate-row:nth-child(2n) { background: rgba(255, 255, 255, 0.02); }
+
+.rate-row:first-child {
+  position: sticky;
+  top: 0;
+  background: rgba(15, 23, 42, 0.95);
+  z-index: 1;
+}
 
 .rate-row header { font-weight: 700; color: var(--muted); }
 .rate-row label { display: flex; align-items: center; gap: 8px; }
@@ -364,4 +399,5 @@ input[type="number"], input[type="text"], select {
   .rate-row header:nth-child(n+3) { display: none; }
   .controls { flex-direction: column; }
   .invoice-grid { grid-template-columns: 1fr; }
+  .configure-grid { grid-template-columns: 1fr; }
 }
