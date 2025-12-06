@@ -101,83 +101,11 @@ const DB_STORE = 'events';
 let dbPromise = null;
 const databaseStatus = { connected: false, count: 0, lastEntry: null, error: null };
 
-const baseFleet = [
-  {
-    id: 'TRK-21',
-    type: 'Flatbed',
-    operator: 'Sam Tonks',
-    contact: '604-000-2100',
-    status: 'dispatched',
-    location: 'Maple Ridge yard',
-    compliance: ['CVSE', 'First aid', 'PPE'],
-  },
-  {
-    id: 'TRK-14',
-    type: 'Wrecker',
-    operator: 'Jas Dhaliwal',
-    contact: '604-000-1400',
-    status: 'dispatched',
-    location: 'HWY 1 @ 232',
-    compliance: ['CVSE', 'Fall protection'],
-  },
-  {
-    id: 'TRK-7',
-    type: 'Service',
-    operator: 'Leah Campos',
-    contact: '604-000-0700',
-    status: 'in_yard',
-    location: 'Pitt Meadows shop',
-    compliance: ['CVSE', 'Spill kit'],
-  },
-  {
-    id: 'TRK-3',
-    type: 'Motorcycle deck',
-    operator: 'Wei Zhang',
-    contact: '604-000-0300',
-    status: 'on_scene',
-    location: 'Lougheed Hwy',
-    compliance: ['CVSE', 'First aid'],
-  },
-];
+const baseFleet = [];
 
-const baseJobs = [
-  {
-    id: 'JOB-2041',
-    customer: 'BCAA member',
-    location: 'Louheed Hwy @ 203rd',
-    provider: 'BCAA',
-    eta: '12:15',
-    notes: 'Winch out, muddy shoulder',
-    status: 'Awaiting dispatch',
-    assignedDriver: null,
-    revenue: null,
-    invoiceStatus: 'Draft',
-  },
-  {
-    id: 'JOB-2042',
-    customer: 'Park and Fly',
-    location: 'YVR Economy lot',
-    provider: 'ParkAndFly',
-    eta: '12:40',
-    notes: 'Flat tire, needs dollies',
-    status: 'Dispatched',
-    assignedDriver: 'TRK-21',
-    revenue: null,
-    invoiceStatus: 'Draft',
-  },
-  {
-    id: 'JOB-2043',
-    customer: 'Retail',
-    location: 'Dewdney Trunk Rd',
-    provider: 'Sykes',
-    eta: '13:10',
-    notes: 'Motorcycle premium',
-    status: 'On scene',
-    assignedDriver: 'TRK-3',
-    revenue: null,
-    invoiceStatus: 'Draft',
-  },
-];
+let editingTruckId = null;
+
+const baseJobs = [];
 
 function cloneRates(rates) {
   return JSON.parse(JSON.stringify(rates));
@@ -282,6 +210,75 @@ function updateFleetStatus(truckId, status) {
   renderSnapshot();
   renderDispatchTasks();
   renderWorkflowBoard();
+}
+
+function removeFleet(truckId) {
+  const truck = state.fleet.find((t) => t.id === truckId);
+  if (!truck) return;
+  state.fleet = state.fleet.filter((t) => t.id !== truckId);
+  state.jobs.forEach((job) => {
+    if (job.assignedDriver === truckId) {
+      job.assignedDriver = null;
+      if (job.status !== 'Delivered') job.status = 'Awaiting dispatch';
+    }
+  });
+  addActivity(`${truck.id} removed from roster`);
+  persistState();
+  renderFleet();
+  renderSnapshot();
+  renderDispatchTasks();
+  renderWorkflowBoard();
+  if (editingTruckId === truckId) resetFleetForm();
+}
+
+function startFleetEdit(truck) {
+  const form = document.querySelector('#addFleetForm');
+  if (!form || !truck) return;
+  editingTruckId = truck.id;
+  form.dataset.mode = 'edit';
+  form.querySelector('input[name="id"]').value = truck.id;
+  form.querySelector('input[name="type"]').value = truck.type;
+  form.querySelector('input[name="operator"]').value = truck.operator;
+  form.querySelector('input[name="contact"]').value = truck.contact;
+  form.querySelector('input[name="location"]').value = truck.location;
+  form.querySelector('select[name="status"]').value = truck.status;
+  form.querySelector('input[name="compliance"]').value = Array.isArray(truck.compliance)
+    ? truck.compliance.join(', ')
+    : truck.compliance || '';
+  const modeLabel = form.querySelector('.fleet-form-mode');
+  const submit = form.querySelector('button[type="submit"]');
+  if (modeLabel) modeLabel.textContent = `Editing ${truck.id}`;
+  if (submit) submit.textContent = 'Save changes';
+}
+
+function resetFleetForm() {
+  const form = document.querySelector('#addFleetForm');
+  if (!form) return;
+  form.reset();
+  form.dataset.mode = 'create';
+  editingTruckId = null;
+  const modeLabel = form.querySelector('.fleet-form-mode');
+  const submit = form.querySelector('button[type="submit"]');
+  if (modeLabel) modeLabel.textContent = 'Add truck and driver';
+  if (submit) submit.textContent = 'Add to roster';
+}
+
+function clearRoster() {
+  if (!state.fleet.length) return;
+  state.fleet = [];
+  state.jobs.forEach((job) => {
+    if (job.assignedDriver) {
+      job.assignedDriver = null;
+      if (job.status !== 'Delivered') job.status = 'Awaiting dispatch';
+    }
+  });
+  addActivity('Roster cleared to start fresh');
+  persistState();
+  renderFleet();
+  renderSnapshot();
+  renderDispatchTasks();
+  renderWorkflowBoard();
+  resetFleetForm();
 }
 
 function renderDispatchTasks() {
@@ -410,6 +407,10 @@ function createElement(tag, options = {}) {
 function formatCurrency(value) {
   if (Number.isNaN(value)) return '$0.00';
   return value.toLocaleString('en-CA', { style: 'currency', currency: 'CAD' });
+}
+
+function roundCurrency(value) {
+  return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
 }
 
 function formatTimestamp(timestamp) {
@@ -573,14 +574,15 @@ function renderRateTable() {
   }
 }
 
-function calculateTotal() {
-  const providerRates = state.rates[state.provider] || [];
-  let baseTotal = 0;
+function calculateTotal(provider = state.provider) {
+  const providerRates = state.rates[provider] || [];
+  let baseSubtotal = 0;
+  let percentTotal = 0;
   const lines = [];
   const percentLines = [];
 
   providerRates.forEach((rate) => {
-    const sel = getSelection(state.provider, rate.key);
+    const sel = getSelection(provider, rate.key);
     if (!sel.include) return;
 
     if (rate.type === 'percent') {
@@ -588,9 +590,9 @@ function calculateTotal() {
       return;
     }
 
-    const qty = rate.type === 'flat' ? 1 : (sel.qty || 0);
-    const subtotal = qty * rate.amount;
-    baseTotal += subtotal;
+    const qty = rate.type === 'flat' ? 1 : Number(sel.qty) || 0;
+    const subtotal = roundCurrency(qty * rate.amount);
+    baseSubtotal += subtotal;
     lines.push({
       label: rate.label,
       qty: rate.type === 'flat' ? 1 : qty,
@@ -600,8 +602,11 @@ function calculateTotal() {
     });
   });
 
+  baseSubtotal = roundCurrency(baseSubtotal);
+
   percentLines.forEach(({ rate }) => {
-    const subtotal = baseTotal * rate.amount;
+    const subtotal = roundCurrency(baseSubtotal * rate.amount);
+    percentTotal += subtotal;
     lines.push({
       label: rate.label,
       qty: 1,
@@ -609,10 +614,10 @@ function calculateTotal() {
       subtotal,
       type: rate.type,
     });
-    baseTotal += subtotal;
   });
 
-  return { total: baseTotal, lines };
+  const total = roundCurrency(baseSubtotal + percentTotal);
+  return { total, lines };
 }
 
 function renderSummary() {
@@ -646,9 +651,13 @@ function renderSummary() {
 
 function renderJobSelect() {
   const selects = document.querySelectorAll('.job-select');
+  const hasJobs = state.jobs.length > 0;
   selects.forEach((select) => {
     select.innerHTML = '';
-    const placeholder = createElement('option', { value: '', textContent: 'No job linked' });
+    const placeholder = createElement('option', {
+      value: '',
+      textContent: hasJobs ? 'No job linked' : 'Add a job to link charges',
+    });
     select.appendChild(placeholder);
     state.jobs.forEach((job) => {
       const opt = createElement('option', { value: job.id, textContent: `${job.id} · ${job.customer}` });
@@ -657,11 +666,17 @@ function renderJobSelect() {
     if (state.invoiceJobId) {
       select.value = state.invoiceJobId;
     }
+    select.disabled = !hasJobs;
     select.onchange = (ev) => {
       state.invoiceJobId = ev.target.value || state.invoiceJobId;
       persistState();
       renderInvoice();
     };
+  });
+
+  const attachBtns = document.querySelectorAll('.attach-to-job');
+  attachBtns.forEach((btn) => {
+    btn.disabled = !hasJobs;
   });
 }
 
@@ -673,6 +688,13 @@ function getInvoiceJob() {
 function renderInvoice() {
   const job = getInvoiceJob();
   if (job && !state.invoiceJobId) state.invoiceJobId = job.id;
+
+  if (job && state.provider !== job.provider) {
+    state.provider = job.provider;
+    renderProviderOptions();
+    renderRateTable();
+    renderSummary();
+  }
 
   const metaContainers = document.querySelectorAll('.invoice-card .snapshot-grid');
   metaContainers.forEach((container) => {
@@ -924,6 +946,20 @@ function renderFleet() {
   containers.forEach((container) => {
     container.innerHTML = '';
 
+    if (!state.fleet.length) {
+      const empty = createElement('div', { className: 'empty-state' });
+      empty.append(
+        createElement('h4', { textContent: 'No trucks on the roster' }),
+        createElement('p', {
+          className: 'muted',
+          textContent: 'Start fresh by adding trucks, drivers, and compliance tags with the form below.',
+        }),
+        createElement('div', { className: 'pill muted-pill', textContent: 'Roster cleared' }),
+      );
+      container.appendChild(empty);
+      return;
+    }
+
     state.fleet.forEach((truck) => {
       const row = createElement('div', { className: 'fleet-row' });
       const statusMap = {
@@ -943,6 +979,20 @@ function renderFleet() {
 
       const compliance = Array.isArray(truck.compliance) ? truck.compliance.join(', ') : truck.compliance || 'N/A';
       const contact = truck.contact ? ` · ${truck.contact}` : '';
+      const actionWrap = createElement('div', { className: 'fleet-actions' });
+      const editBtn = createElement('button', {
+        type: 'button',
+        className: 'secondary small',
+        textContent: 'Edit',
+      });
+      editBtn.addEventListener('click', () => startFleetEdit(truck));
+      const deleteBtn = createElement('button', {
+        type: 'button',
+        className: 'ghost small',
+        textContent: 'Remove',
+      });
+      deleteBtn.addEventListener('click', () => removeFleet(truck.id));
+      actionWrap.append(editBtn, deleteBtn);
 
       row.append(
         createElement('div', { className: 'fleet-id', textContent: `${truck.id} · ${truck.type}` }),
@@ -950,19 +1000,11 @@ function renderFleet() {
         createElement('div', { className: 'muted', textContent: truck.location }),
         statusSelect,
         createElement('div', { className: 'muted', textContent: compliance }),
-        createElement('div', { className: 'fleet-actions', textContent: truck.status === 'available' ? 'Ready for call' : 'Active' }),
+        actionWrap,
       );
       container.appendChild(row);
     });
   });
-  const overviewLink = createElement('a', {
-    href: 'index.html',
-    className: 'button secondary',
-    textContent: 'Back to overview',
-  });
-  links.append(taskLink, ticketLink, overviewLink);
-
-  container.append(steps, links);
 }
 
 function renderJobs() {
@@ -983,6 +1025,20 @@ function renderJobs() {
     });
 
     const list = createElement('div', { className: 'job-list' });
+
+    if (!state.jobs.length) {
+      const empty = createElement('div', { className: 'empty-state' });
+      empty.append(
+        createElement('h4', { textContent: 'No active calls yet' }),
+        createElement('p', {
+          className: 'muted',
+          textContent: 'Use the manual call intake form to create the first job and keep ticketing aligned.',
+        }),
+        createElement('div', { className: 'pill muted-pill', textContent: 'Preview jobs removed' }),
+      );
+      list.appendChild(empty);
+    }
+
     state.jobs.forEach((job) => {
       const card = createElement('div', { className: 'job-card' });
       const header = createElement('div', { className: 'job-card-header' });
@@ -1044,11 +1100,12 @@ function attachChargesToJob(selectEl) {
   if (!jobId) return;
   const job = state.jobs.find((j) => j.id === jobId);
   if (!job) return;
-  const { total, lines } = calculateTotal();
+  const providerUsed = job.provider || state.provider;
+  const { total, lines } = calculateTotal(providerUsed);
   state.invoiceJobId = jobId;
   job.invoiceStatus = job.invoiceStatus || 'Draft';
-  job.revenue = { total, lines, provider: state.provider };
-  addActivity(`${job.id} updated with ${formatCurrency(total)} from ${state.provider}`);
+  job.revenue = { total, lines, provider: providerUsed };
+  addActivity(`${job.id} updated with ${formatCurrency(total)} from ${providerUsed}`);
   persistState();
   renderJobs();
   renderSnapshot();
@@ -1070,7 +1127,7 @@ function exportCurrentJobCSV() {
   const job = getInvoiceJob();
   if (!job) return;
 
-  const revenue = job.revenue || calculateTotal();
+  const revenue = job.revenue || calculateTotal(job.provider || state.provider);
   const lines = revenue.lines?.length
     ? revenue.lines
     : [{ label: 'No charges attached', qty: 0, amount: 0, subtotal: 0, type: 'flat' }];
@@ -1152,6 +1209,15 @@ function wireJobForm() {
 function wireFleetForm() {
   const form = document.querySelector('#addFleetForm');
   if (!form) return;
+  form.dataset.mode = 'create';
+
+  const cancelBtn = form.querySelector('.cancel-fleet-edit');
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      resetFleetForm();
+    });
+  }
 
   form.addEventListener('submit', (ev) => {
     ev.preventDefault();
@@ -1169,14 +1235,25 @@ function wireFleetForm() {
       location: data.location.trim(),
       compliance: compliance.length ? compliance : ['CVSE'],
     };
-    state.fleet.unshift(truck);
-    addActivity(`${truck.id} added with ${truck.operator}`);
+
+    if (form.dataset.mode === 'edit' && editingTruckId) {
+      const idx = state.fleet.findIndex((t) => t.id === editingTruckId);
+      if (idx >= 0) {
+        state.fleet[idx] = truck;
+      } else {
+        state.fleet.unshift(truck);
+      }
+      addActivity(`${truck.id} updated for ${truck.operator}`);
+    } else {
+      state.fleet.unshift(truck);
+      addActivity(`${truck.id} added with ${truck.operator}`);
+    }
     persistState();
     renderFleet();
     renderDispatchTasks();
     renderSnapshot();
     renderWorkflowBoard();
-    form.reset();
+    resetFleetForm();
   });
 }
 
@@ -1261,6 +1338,9 @@ function wireControls() {
     });
   });
 
+  const clearButtons = document.querySelectorAll('.clear-roster');
+  clearButtons.forEach((btn) => btn.addEventListener('click', () => clearRoster()));
+
   const invoiceStatusButtons = document.querySelectorAll('.mark-invoiced, .mark-paid');
   invoiceStatusButtons.forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -1303,17 +1383,17 @@ function hydrateState() {
     state.selection = stored.selection || state.selection;
     state.rateFilter = stored.rateFilter || state.rateFilter;
     state.showSelectedOnly = stored.showSelectedOnly || state.showSelectedOnly;
-    state.invoiceJobId = stored.invoiceJobId || state.invoiceJobId;
-    state.fleet = stored.fleet || cloneRates({ baseFleet }).baseFleet || baseFleet;
-    state.jobs = stored.jobs || cloneRates({ baseJobs }).baseJobs || baseJobs;
+    state.jobs = stored.jobs || [];
+    state.invoiceJobId = stored.invoiceJobId || state.jobs[0]?.id || state.invoiceJobId;
+    state.fleet = Array.isArray(stored.fleet) ? stored.fleet : [];
     state.activity = stored.activity || [];
     state.lastSavedAt = stored.lastSavedAt || state.lastSavedAt;
     return;
   }
 
-  state.fleet = cloneRates({ baseFleet }).baseFleet || baseFleet;
-  state.jobs = cloneRates({ baseJobs }).baseJobs || baseJobs;
-  state.invoiceJobId = state.jobs[0]?.id || null;
+  state.fleet = [];
+  state.jobs = [];
+  state.invoiceJobId = null;
   state.lastSavedAt = state.lastSavedAt || new Date().toISOString();
 }
 

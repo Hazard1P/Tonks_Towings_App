@@ -107,18 +107,56 @@
       </div>
       <div class="job-board"></div>
 
-      <details class="custom-add">
-        <summary>Add new job</summary>
-        <form id="jobForm" class="job-form custom-form two-col">
-          <label>Job ID<input name="id" required placeholder="JOB-2081" /><span class="input-hint">Unique code to keep dispatch, invoicing, and overview aligned.</span></label>
-          <label>Customer<input name="customer" required placeholder="ICBC / retail" /><span class="input-hint">Club, retail, or account name.</span></label>
-          <label>Location<input name="location" required placeholder="Highway 1 / 232 exit" /><span class="input-hint">Nearest landmark or cross-street.</span></label>
-          <label>Provider
-            <select name="provider" required></select>
-            <span class="input-hint">Matches the rate sheet used in ticketing.</span>
+      <details class="custom-add call-intake" open>
+        <summary>Manual call intake</summary>
+        <div class="intake-header">
+          <div>
+            <h4>Log a call straight into dispatch</h4>
+            <p class="muted">No preview jobs—create only the work that’s actually on the board.</p>
+            <div class="pill-row">
+              <span class="pill">Clean slate</span>
+              <span class="pill muted-pill">Driver-ready fields</span>
+            </div>
+          </div>
+          <div class="pill muted-pill">Syncs with ticketing + overview</div>
+        </div>
+        <form id="jobForm" class="job-form intake-grid">
+          <label class="field-label">Job ID
+            <div class="field-stack">
+              <input name="id" required placeholder="JOB-2081" />
+              <span class="input-hint">Unique code to keep dispatch, invoicing, and overview aligned.</span>
+            </div>
           </label>
-          <label>ETA<input name="eta" required placeholder="14:25" /><span class="input-hint">24h clock for quick status scans.</span></label>
-          <label>Notes<input name="notes" placeholder="Winch out, debris, etc." /><span class="input-hint">Optional context for the driver and invoice.</span></label>
+          <label class="field-label">Customer
+            <div class="field-stack">
+              <input name="customer" required placeholder="ICBC / retail" />
+              <span class="input-hint">Club, retail, or account name.</span>
+            </div>
+          </label>
+          <label class="field-label">Location
+            <div class="field-stack">
+              <input name="location" required placeholder="Highway 1 / 232 exit" />
+              <span class="input-hint">Nearest landmark or cross-street.</span>
+            </div>
+          </label>
+          <label class="field-label">Provider
+            <div class="field-stack">
+              <select name="provider" required></select>
+              <span class="input-hint">Matches the rate sheet used in ticketing.</span>
+            </div>
+          </label>
+          <label class="field-label">ETA
+            <div class="field-stack">
+              <input name="eta" required placeholder="14:25" />
+              <span class="input-hint">24h clock for quick status scans.</span>
+            </div>
+          </label>
+          <label class="field-label">Notes
+            <div class="field-stack">
+              <input name="notes" placeholder="Winch out, debris, etc." />
+              <span class="input-hint">Optional context for the driver and invoice.</span>
+            </div>
+          </label>
           <button type="submit">Create job</button>
         </form>
       </details>
@@ -145,12 +183,16 @@
           <h2>Fleet roster</h2>
           <p class="muted">Assets, operators, compliance, and readiness.</p>
         </div>
-        <button class="rotate-roster" type="button" class="secondary">Rotate status</button>
+        <div class="summary-actions">
+          <button class="clear-roster secondary" type="button">Clear roster</button>
+          <button class="rotate-roster" type="button" class="secondary">Rotate status</button>
+        </div>
       </div>
       <div id="fleet"></div>
       <details class="custom-add">
         <summary>Add truck and driver</summary>
         <form id="addFleetForm" class="custom-form two-col">
+          <div class="fleet-form-mode">Add truck and driver</div>
           <label>Truck ID<input name="id" required placeholder="TRK-45" /></label>
           <label>Truck type<input name="type" required placeholder="Flatbed / Wrecker / Service" /></label>
           <label>Driver name<input name="operator" required placeholder="Avery Stone" /></label>
@@ -165,7 +207,10 @@
             </select>
           </label>
           <label>Compliance tags<input name="compliance" placeholder="CVSE, PPE, First aid" /></label>
-          <button type="submit">Add to roster</button>
+          <div class="form-actions">
+            <button type="submit">Add to roster</button>
+            <button type="button" class="secondary cancel-fleet-edit">Cancel edit</button>
+          </div>
         </form>
       </details>
     </section>

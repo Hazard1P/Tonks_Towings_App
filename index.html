@@ -95,17 +95,56 @@
       </div>
       <div class="job-board"></div>
 
-      <details class="custom-add">
-        <summary>Add new job</summary>
-        <form class="job-form custom-form two-col">
-          <label>Job ID<input name="id" required placeholder="JOB-2081" /></label>
-          <label>Customer<input name="customer" required placeholder="ICBC / retail" /></label>
-          <label>Location<input name="location" required placeholder="Highway 1 / 232 exit" /></label>
-          <label>Provider
-            <select name="provider" required></select>
+      <details class="custom-add call-intake" open>
+        <summary>Manual call intake</summary>
+        <div class="intake-header">
+          <div>
+            <h4>Log a job without previews</h4>
+            <p class="muted">Start every call fresh; all linked pages sync the new ticket instantly.</p>
+            <div class="pill-row">
+              <span class="pill">No seed data</span>
+              <span class="pill muted-pill">Keyboard-friendly</span>
+            </div>
+          </div>
+          <div class="pill muted-pill">Saves locally as you type</div>
+        </div>
+        <form class="job-form intake-grid">
+          <label class="field-label">Job ID
+            <div class="field-stack">
+              <input name="id" required placeholder="JOB-2081" />
+              <span class="input-hint">Unique code that dispatch, invoicing, and overview all share.</span>
+            </div>
           </label>
-          <label>ETA<input name="eta" required placeholder="14:25" /></label>
-          <label>Notes<input name="notes" placeholder="Winch out, debris, etc." /></label>
+          <label class="field-label">Customer
+            <div class="field-stack">
+              <input name="customer" required placeholder="ICBC / retail" />
+              <span class="input-hint">Club, retail, or account name for billing alignment.</span>
+            </div>
+          </label>
+          <label class="field-label">Location
+            <div class="field-stack">
+              <input name="location" required placeholder="Highway 1 / 232 exit" />
+              <span class="input-hint">Nearest landmark or cross-street for driver context.</span>
+            </div>
+          </label>
+          <label class="field-label">Provider
+            <div class="field-stack">
+              <select name="provider" required></select>
+              <span class="input-hint">Matches the rate sheet the invoice will use.</span>
+            </div>
+          </label>
+          <label class="field-label">ETA
+            <div class="field-stack">
+              <input name="eta" required placeholder="14:25" />
+              <span class="input-hint">24h clock keeps arrival windows consistent.</span>
+            </div>
+          </label>
+          <label class="field-label">Notes
+            <div class="field-stack">
+              <input name="notes" placeholder="Winch out, debris, etc." />
+              <span class="input-hint">Optional context that will follow the ticket.</span>
+            </div>
+          </label>
           <button type="submit">Create job</button>
         </form>
       </details>
@@ -117,7 +156,10 @@
           <h2>Fleet roster</h2>
           <p class="muted">Assets, operators, compliance, and readiness.</p>
         </div>
-        <button class="rotate-roster" type="button" class="secondary">Rotate status</button>
+        <div class="summary-actions">
+          <button class="clear-roster secondary" type="button">Clear roster</button>
+          <button class="rotate-roster" type="button" class="secondary">Rotate status</button>
+        </div>
       </div>
       <div class="fleet-roster"></div>
     </section>

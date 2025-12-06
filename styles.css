@@ -306,7 +306,7 @@ h1 { margin: 0; font-size: clamp(24px, 4vw, 34px); }
 
 .fleet-row {
   display: grid;
-  grid-template-columns: repeat(6, minmax(80px, 1fr));
+  grid-template-columns: repeat(5, minmax(80px, 1fr)) minmax(180px, 1fr);
   gap: 12px;
   padding: 10px 0;
   border-bottom: 1px solid var(--border);
@@ -315,7 +315,11 @@ h1 { margin: 0; font-size: clamp(24px, 4vw, 34px); }
 .fleet-row:last-child { border-bottom: none; }
 .fleet-id { font-weight: 700; }
 .status { color: var(--accent); font-weight: 700; }
-.fleet-actions { color: var(--muted); font-weight: 700; }
+.fleet-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+.fleet-actions .small { padding: 6px 8px; font-size: 12px; }
+
+.form-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.fleet-form-mode { font-weight: 700; color: var(--accent); }
 
 .two-col { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
 
@@ -400,6 +404,59 @@ input[type="number"], input[type="text"], select {
   border: 1px dashed var(--border);
   border-radius: 10px;
   padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+}
+.empty-state {
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  padding: 14px 12px;
+  display: grid;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.call-intake {
+  border: 1px dashed rgba(56, 189, 248, 0.35);
+  border-radius: 14px;
+  padding: 14px;
+  background: rgba(56, 189, 248, 0.02);
+}
+
+.call-intake summary {
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  color: var(--accent);
+}
+
+.intake-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.intake-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.field-label {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.field-stack {
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
   background: rgba(255, 255, 255, 0.02);
 }
 
