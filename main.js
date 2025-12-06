@@ -101,9 +101,44 @@ const DB_STORE = 'events';
 let dbPromise = null;
 const databaseStatus = { connected: false, count: 0, lastEntry: null, error: null };
 
-const baseFleet = [];
-
-let editingTruckId = null;
+const baseFleet = [
+  {
+    id: 'TRK-21',
+    type: 'Flatbed',
+    operator: 'Sam Tonks',
+    contact: '604-000-2100',
+    status: 'dispatched',
+    location: 'Maple Ridge yard',
+    compliance: ['CVSE', 'First aid', 'PPE'],
+  },
+  {
+    id: 'TRK-14',
+    type: 'Wrecker',
+    operator: 'Jas Dhaliwal',
+    contact: '604-000-1400',
+    status: 'dispatched',
+    location: 'HWY 1 @ 232',
+    compliance: ['CVSE', 'Fall protection'],
+  },
+  {
+    id: 'TRK-7',
+    type: 'Service',
+    operator: 'Leah Campos',
+    contact: '604-000-0700',
+    status: 'in_yard',
+    location: 'Pitt Meadows shop',
+    compliance: ['CVSE', 'Spill kit'],
+  },
+  {
+    id: 'TRK-3',
+    type: 'Motorcycle deck',
+    operator: 'Wei Zhang',
+    contact: '604-000-0300',
+    status: 'on_scene',
+    location: 'Lougheed Hwy',
+    compliance: ['CVSE', 'First aid'],
+  },
+];
 
 const baseJobs = [];
 
@@ -1385,13 +1420,13 @@ function hydrateState() {
     state.showSelectedOnly = stored.showSelectedOnly || state.showSelectedOnly;
     state.jobs = stored.jobs || [];
     state.invoiceJobId = stored.invoiceJobId || state.jobs[0]?.id || state.invoiceJobId;
-    state.fleet = Array.isArray(stored.fleet) ? stored.fleet : [];
+    state.fleet = stored.fleet || cloneRates({ baseFleet }).baseFleet || baseFleet;
     state.activity = stored.activity || [];
     state.lastSavedAt = stored.lastSavedAt || state.lastSavedAt;
     return;
   }
 
-  state.fleet = [];
+  state.fleet = cloneRates({ baseFleet }).baseFleet || baseFleet;
   state.jobs = [];
   state.invoiceJobId = null;
   state.lastSavedAt = state.lastSavedAt || new Date().toISOString();
